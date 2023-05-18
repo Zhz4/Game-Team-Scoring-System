@@ -1,18 +1,23 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" />
-  </div>
+  <div class="home">{{ count }}</div>
+  <button @click="add">添加</button>
+
 </template>
 
 <script lang="ts">
-import { Options, Vue } from "vue-class-component";
-import HelloWorld from "@/components/HelloWorld.vue"; // @ is an alias to /src
+import { reactive, ref } from 'vue'
 
-@Options({
-  components: {
-    HelloWorld,
+export default {
+  setup() {
+    const count = ref(0)
+    const add = () => {
+      count.value++
+    }
+    return {
+      count,
+      add
+    }
   },
-})
-export default class HomeView extends Vue {}
+};
 </script>
+
