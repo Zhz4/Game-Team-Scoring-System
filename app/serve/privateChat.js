@@ -1,27 +1,13 @@
-const WebSocket = require('websocket').server;
-const http = require('http');
-const url = require('url');
-const querystring = require('querystring');
-
-// 创建一个 HTTP 服务器
-const server = http.createServer((request, response) => {
-    console.log('收到客户端请求：' + request.url);
-
-    response.writeHead(404);
-    response.end();
-});
-
-// 绑定 WebSocket 监听到 HTTP 服务器上
-const wsServer = new WebSocket({
-    httpServer: server,
-    autoAcceptConnections: false,
-});
 
 // 定义连接对象列表
+const url = require('url');
+const {wsServer} = require('./WebSocketServer')
+
+
 let connections = [];
 let count = 0
 // 监听 WebSocket 连接事件
-wsServer.on('request', (request) => {
+const privateChart = wsServer.on('request', (request) => {
     const connection = request.accept(null, request.origin);
     // 获取客户端请求的 URL 和 query 参数
     const {pathname, search} = url.parse(request.httpRequest.url);
@@ -68,7 +54,6 @@ wsServer.on('request', (request) => {
     });
 });
 
-// 启动 HTTP 服务器
-server.listen(3000, () => {
-    console.log('服务器已启动，地址为 http://localhost:3000');
-});
+module.exports = {
+    privateChart
+}
