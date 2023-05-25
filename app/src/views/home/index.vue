@@ -70,10 +70,17 @@ export default {
       const data = JSON.parse(event.data)
       console.log('收到消息：' + data.msg);
       if (data.type === 0) {
-        conns.value = data.conns
+        conns.value = Array.from(new Set(data.conns));
         ElMessage({
           message: data.msg,
           type: 'success',
+        })
+        return
+      }else if(data.type === 4){
+        conns.value = data.conns
+        ElMessage({
+          message: data.msg,
+          type: 'warning',
         })
         return
       }

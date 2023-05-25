@@ -1,9 +1,8 @@
-
-// 定义连接对象列表
 const url = require('url');
 const {wsServer} = require('./WebSocketServer')
 
 
+// 定义连接对象列表
 let connections = [];
 let count = 0
 // 监听 WebSocket 连接事件
@@ -15,8 +14,11 @@ const privateChart = wsServer.on('request', (request) => {
     // 将连接对象保存到列表中
     let nickname = search.split('=')[1]
     console.log(nickname + 'WebSocket 连接已建立！');
+    // const hasconnection = connections.some(item => item.nickname === nickname)
+    // if(!hasconnection){
     connection.nickname = nickname
     connections.push(connection);
+    // }
     // 遍历所有客户端连接，向每个客户端发送消息
     connections.forEach(function (connection) {
         // 忽略发送消息的客户端，避免消息被重复发送
@@ -51,6 +53,13 @@ const privateChart = wsServer.on('request', (request) => {
         // 删除连接关闭的对象
         connections = connections.filter(item=>item.nickname !== connection.nickname)
         console.log('删除后连接个数'+connections.length)
+        // 遍历所有客户端连接，向每个客户端发送消息
+        connections.forEach(function (connection) {
+            // 忽略发送消息的客户端，避免消息被重复发送
+            if (connection !== this) {
+                connection.sendUTF(JSON.stringify({msg:nickname +'连接已关闭',conns:connections.map(item=>item.nickname),type:4}));
+            }
+        },this);
     });
 });
 
