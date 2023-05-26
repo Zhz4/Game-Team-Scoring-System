@@ -8,25 +8,35 @@
     </div>
     <div>
       <p>该房间的人员</p>
+      <div v-for="item in member">
+        {{item}}
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import {reactive, ref} from 'vue';
+import {checkToken} from "@/util/Token";
 
-const wsUrl = `ws://localhost:3001`;
+let token: string
+// 存储token
+if (!checkToken()) {
+  token = new Date().getTime().toString()
+  localStorage.setItem('token', token)
+} else {
+  token = localStorage.getItem('token')!
+}
+
+const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(token)}`;
 
 const ws = new WebSocket(wsUrl);
 
-ws.onmessage = function (event){
-  const data = JSON.parse(event.data)
-  if(data.type == 'create') console.log('收到消息：' + data.roomId);
-  else if(data.type == 'join') console.log(data);
-}
+
 export default {
   setup() {
     const roomId = ref('')
+    const member = ref<string[]>([])
     // 创建房间
     const create = () =>{
       ws.send(JSON.stringify({type:'create'}))
@@ -35,8 +45,17 @@ export default {
     const join = () => {
       ws.send(JSON.stringify({type:'join',roomId:roomId.value}))
     }
+    ws.onmessage = (event)=>{
+      const data = JSON.parse(event.data)
+      member.value = data.member
+      console.log(data)
+    }
+    ws.onclose = function () {
+      ws.send(JSON.stringify({type:'out'}))
+    };
     return {
       roomId,
+      member,
       join,
       create
     }

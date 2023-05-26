@@ -1,5 +1,6 @@
 const {server} = require('./WebSocketServer')
-const privateChart = require("./privateChat");
+// const privateChart = require("./privateChat");
+// const roomChart = require('./room')
 
 // 启动 HTTP 服务器
 server.listen(3000, () => {

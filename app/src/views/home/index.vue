@@ -29,7 +29,7 @@ if (!checkToken()) {
 } else {
   token = localStorage.getItem('token')!
 }
-const wsUrl = `ws://localhost:3000?token=${encodeURIComponent(token)}`;
+const wsUrl = `ws://localhost:3000/privateChart?token=${encodeURIComponent(token)}`;
 
 const ws = new WebSocket(wsUrl);
 
@@ -77,7 +77,7 @@ export default {
         })
         return
       }else if(data.type === 4){
-        conns.value = data.conns
+        conns.value = Array.from(new Set(data.conns));
         ElMessage({
           message: data.msg,
           type: 'warning',
