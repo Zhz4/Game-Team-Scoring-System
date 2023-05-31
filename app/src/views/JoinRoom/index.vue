@@ -33,15 +33,13 @@ export default {
     const ws = ref<WebSocket | null>(null);
 
     const createws =  () => {
-      // const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(token)}`;
-      // const wss = await store.dispatch('connectWebSocket', wsUrl);
       const wss = store.state.websocket
       ws.value = wss
       // 监听信息
       wss.onmessage = (event: { data: string; }) => {
         const data = JSON.parse(event.data)
         if (data.type === 'create') {
-          create_router(data.roomId)
+          create_router(data.roomId,'0')
         }
       }
     };
@@ -51,26 +49,23 @@ export default {
     };
 
     // 创建房间跳转
-    const create_router = (roomId: string) => {
+    const create_router = (roomId: string,sign:string) => {
       router.push({
         name: 'roomDetail',
         params: {
-          roomId: roomId
+          roomId: roomId,
+          sign:sign
         }
       })
     };
     // 加入房间
     const join = () => {
-      create_router(roomId.value)
+      create_router(roomId.value,'1')
     };
 
     onMounted(() => {
       createws();
-      console.log('jinruda')
     });
-    // onBeforeUnmount(() => {
-    //   ws.value?.close();
-    // })
 
     return {
       roomId,

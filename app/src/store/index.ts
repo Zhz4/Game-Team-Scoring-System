@@ -19,9 +19,6 @@ const store = createStore<State>({
         SET_WEBSOCKET(state: State, value: WebSocket) {
             state.websocket = value
         },
-        SET_MESSAGE(state:State,value:object){
-            state.message = value
-        }
     },
     actions: {
         connectWebSocket({ commit }: { commit: Commit },url): WebSocket | void {

@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     // 房间详情
-    path: "/roomDetail/:roomId",
+    path: "/roomDetail/:roomId/:sign",
     name: "roomDetail",
     component:  ()=>import("../views/roomDetail/index.vue"),
   },

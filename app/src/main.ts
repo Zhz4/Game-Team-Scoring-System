@@ -15,6 +15,6 @@ if (!checkToken()) {
     token = localStorage.getItem('token')!
 }
 const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(token)}`;
-store.dispatch('connectWebSocket', wsUrl)
-
-createApp(App).use(store).use(router).use(ElementPlus).mount("#app");
+store.dispatch('connectWebSocket', wsUrl).then(()=>{
+    createApp(App).use(store).use(router).use(ElementPlus).mount("#app");
+})

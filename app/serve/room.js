@@ -75,7 +75,7 @@ function GroupChart(request) {
      * 处理退出房间
      */
     function handleOut(){
-        if (!connection.room) {
+        if (!connection.room || rooms.size === 0) {
             return
         }
         const roomId = connection.room
