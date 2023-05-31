@@ -6,18 +6,15 @@
       <el-button type="primary" @click="create">创建房间</el-button>
       <el-button type="primary" @click="join">加入</el-button>
     </div>
-    <div>
-      <p>该房间的人员</p>
-      <div v-for="item in member">
-        {{item}}
-      </div>
-    </div>
   </div>
 </template>
 
 <script lang="ts">
-import {reactive, ref} from 'vue';
+import {reactive, ref, onMounted, computed, watch, onBeforeUnmount} from 'vue';
+import {useRoute, useRouter} from 'vue-router'
+import {useStore} from 'vuex';
 import {checkToken} from "@/util/Token";
+import router from "@/router";
 
 let token: string
 // 存储token
@@ -28,36 +25,58 @@ if (!checkToken()) {
   token = localStorage.getItem('token')!
 }
 
-const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(token)}`;
-
-const ws = new WebSocket(wsUrl);
-
-
 export default {
   setup() {
+    const router = useRouter()
     const roomId = ref('')
-    const member = ref<string[]>([])
+    const store = useStore();
+    const ws = ref<WebSocket | null>(null);
+
+    const createws =  () => {
+      // const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(token)}`;
+      // const wss = await store.dispatch('connectWebSocket', wsUrl);
+      const wss = store.state.websocket
+      ws.value = wss
+      // 监听信息
+      wss.onmessage = (event: { data: string; }) => {
+        const data = JSON.parse(event.data)
+        if (data.type === 'create') {
+          create_router(data.roomId)
+        }
+      }
+    };
     // 创建房间
-    const create = () =>{
-      ws.send(JSON.stringify({type:'create'}))
-    }
+    const create = () => {
+      ws.value?.send(JSON.stringify({type: 'create'}));
+    };
+
+    // 创建房间跳转
+    const create_router = (roomId: string) => {
+      router.push({
+        name: 'roomDetail',
+        params: {
+          roomId: roomId
+        }
+      })
+    };
     // 加入房间
     const join = () => {
-      ws.send(JSON.stringify({type:'join',roomId:roomId.value}))
-    }
-    ws.onmessage = (event)=>{
-      const data = JSON.parse(event.data)
-      member.value = data.member
-      console.log(data)
-    }
-    ws.onclose = function () {
-      ws.send(JSON.stringify({type:'out'}))
+      create_router(roomId.value)
     };
+
+    onMounted(() => {
+      createws();
+      console.log('jinruda')
+    });
+    // onBeforeUnmount(() => {
+    //   ws.value?.close();
+    // })
+
     return {
       roomId,
-      member,
+      create,
       join,
-      create
+      create_router
     }
   }
 }

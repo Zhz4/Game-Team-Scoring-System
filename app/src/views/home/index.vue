@@ -30,7 +30,6 @@ if (!checkToken()) {
   token = localStorage.getItem('token')!
 }
 const wsUrl = `ws://localhost:3000/privateChart?token=${encodeURIComponent(token)}`;
-
 const ws = new WebSocket(wsUrl);
 
 

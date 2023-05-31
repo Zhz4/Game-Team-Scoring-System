@@ -5,12 +5,19 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: "home",
-    component:  import("../views/home/index.vue"),
+    component:  ()=>import("../views/home/index.vue"),
   },
   {
+    // 加入房间以及创建房间
     path: "/JoinRoom",
     name: "JoinRoom",
-    component:  ()=>import("../views/JoinRoom/index.vue"),
+    component:  ()=> import("../views/JoinRoom/index.vue"),
+  },
+  {
+    // 房间详情
+    path: "/roomDetail/:roomId",
+    name: "roomDetail",
+    component:  ()=>import("../views/roomDetail/index.vue"),
   },
   {
     path: "/about",
