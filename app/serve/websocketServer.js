@@ -1,6 +1,7 @@
 const WebSocket = require('websocket').server;
 const http = require('http');
 const {GroupChart} = require("./room");
+const {privateChart} = require("./privateChat");
 // 创建一个 HTTP 服务器
 const server = http.createServer((request, response) => {
     console.log('收到客户端请求：' + request.url);
@@ -20,11 +21,11 @@ wsServer.on('request',(request)=>{
     const url = request.httpRequest.url
     const path = url.split('?')[0]
     console.log(path)
-    // if (path === '/privateChart') {
-    //     privateChart(request);
-    // } else if (path === '/groupChart') {
-    GroupChart(request)
-    // }
+    if (path === '/privateChart') {
+        privateChart(request);
+    } else if (path === '/groupChart') {
+        GroupChart(request)
+    }
 })
 
 

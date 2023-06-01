@@ -4,7 +4,7 @@
       <p>输入房间号</p>
       <el-input v-model="roomId" placeholder="请输入房间号"/>
       <el-button type="primary" @click="create">创建房间</el-button>
-      <el-button type="primary" @click="join">加入</el-button>
+      <el-button type="primary" @click="join">加入房间</el-button>
     </div>
   </div>
 </template>
@@ -12,9 +12,10 @@
 <script lang="ts">
 import {reactive, ref, onMounted, computed, watch, onBeforeUnmount} from 'vue';
 import {useRoute, useRouter} from 'vue-router'
-import {useStore} from 'vuex';
+import {useStore,Commit} from 'vuex';
 import {checkToken} from "@/util/Token";
 import router from "@/router";
+import { ElMessage } from 'element-plus';
 
 let token: string
 // 存储token
@@ -38,8 +39,10 @@ export default {
       // 监听信息
       wss.onmessage = (event: { data: string; }) => {
         const data = JSON.parse(event.data)
+        console.log(data)
         if (data.type === 'create') {
-          create_router(data.roomId,'0')
+          store.commit('SET_SIGN',0)
+          create_router(data.roomId)
         }
       }
     };
@@ -49,18 +52,25 @@ export default {
     };
 
     // 创建房间跳转
-    const create_router = (roomId: string,sign:string) => {
-      router.push({
+    const create_router = (roomId: string) => {
+      router.replace({
         name: 'roomDetail',
         params: {
           roomId: roomId,
-          sign:sign
         }
       })
     };
     // 加入房间
     const join = () => {
-      create_router(roomId.value,'1')
+      if (roomId.value === ''){
+        ElMessage({
+          message: '房间号不能为空',
+          type: 'warning',
+        })
+        return
+      }
+      store.commit('SET_SIGN',1)
+      create_router(roomId.value)
     };
 
     onMounted(() => {

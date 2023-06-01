@@ -15,7 +15,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     // 房间详情
-    path: "/roomDetail/:roomId/:sign",
+    path: "/roomDetail/:roomId",
     name: "roomDetail",
     component:  ()=>import("../views/roomDetail/index.vue"),
   },
@@ -29,7 +29,7 @@ const routes: Array<RouteRecordRaw> = [
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes,
+  routes
 });
 
 export default router;

@@ -2,13 +2,15 @@ import { createStore, Commit } from "vuex";
 
 interface State {
     message: object | null;
-    websocket: WebSocket | null
+    websocket: WebSocket | null;
+    sign:number // 判断是房主还是房员
 }
 
 const store = createStore<State>({
     state: {
         websocket: null,
         message:null,
+        sign:0
     },
     getters: {
         getWebSocketUrl(): string {
@@ -19,6 +21,9 @@ const store = createStore<State>({
         SET_WEBSOCKET(state: State, value: WebSocket) {
             state.websocket = value
         },
+        SET_SIGN(state:State,value:number){
+            state.sign = value
+        }
     },
     actions: {
         connectWebSocket({ commit }: { commit: Commit },url): WebSocket | void {
