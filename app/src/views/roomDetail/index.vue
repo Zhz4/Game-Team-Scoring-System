@@ -115,9 +115,11 @@ const validateRanksCount = (rule: any, value: any, callback: any) => {
     callback();
   }
 };
-const validatePeopleCount = (rule: any, value: any, callback: any) => {
+const validatePeopleCount = (rule: any, value: string, callback: any) => {
   if (value === "") {
     callback(new Error("人数不能为空"));
+  } else if (Number(value) < member.value.length) {
+    callback(new Error("人数不能少于当前房间人数"));
   } else {
     callback();
   }
@@ -147,6 +149,16 @@ const createws = () => {
       data.type === "delete" ||
       data.type === "check"
     ) {
+      if (data.type === "join" && data.joinType === "fullyOccupied") {
+        router.replace({
+          name: "JoinRoom",
+        });
+        ElMessage({
+          type: "warning",
+          message: data.msg,
+        });
+        return;
+      }
       member.value = data.member.map(
         (item: { nickname: string }) => item.nickname
       );
@@ -163,6 +175,8 @@ const createws = () => {
     if (data.type === "setUp") {
       watchSetUp(data);
       randomColor.value = data.data.ranksColorList;
+      selectRanksColor.value = "";
+      selectRanksColor.value = "";
       // console.log(randomColor)
       // handleRandomColor(ranksCount.value)
     }
