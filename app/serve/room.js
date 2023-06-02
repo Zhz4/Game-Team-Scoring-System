@@ -10,13 +10,15 @@ function GroupChart(request) {
     let nickname = search.split('=')[1]
     connection.nickname = nickname
 
-    // 处理创建新房间事件
+    /**
+     * 处理创建新房间事件
+     */
     function handleCreateRoom() {
         const roomId = Date.now().toString(); // 使用当前时间戳作为房间号创建新房间
         // 将当前连接加入房间的用户集合中
         // 设置用户类型，0 为房主
         connection.userType = 0
-        rooms.set(roomId, {people:[]});
+        rooms.set(roomId, {people:[],TeamSetting:{}});
         connection.room = roomId
         connection.sendUTF(JSON.stringify({
             type: "create",
@@ -24,7 +26,10 @@ function GroupChart(request) {
         }));
     }
 
-    // 查询指定房间的信息
+    /**
+     * 查询指定房间的信息
+     * @param data 包含房间id
+     */
     function checkRoom(data){
         const {roomId} = data;
         connection.sendUTF(JSON.stringify({
@@ -40,13 +45,23 @@ function GroupChart(request) {
         }));
     }
 
-    // 处理加入房间事件
+    /**
+     * 处理加入房间事件
+     * @param data
+     */
     function handleJoinRoom(data) {
+        const {roomId} = data;
+        // if (determineIfTheRoomIsFullyOccupied(roomId)){
+        //     connection.sendUTF(JSON.stringify({
+        //         type:'join',
+        //         msg:'该房间已满员'
+        //     }))
+        //     return;
+        // }
         // 设置用户类型，1 为房员
         // 由于新建房间时建立一个空房间然后再加入房间，该用户已经赋为0了，就不需要赋为1了
         if (connection.userType===undefined)
             connection.userType = 1
-        const {roomId} = data;
         // 如果没有该房间就创建该房间
         if (!rooms.has(roomId)) {
             rooms.set(roomId, {people:[]});
@@ -83,10 +98,21 @@ function GroupChart(request) {
                             userType:item.userType
                         }
                     }),
+                    TeamSetting: rooms.get(roomId).TeamSetting,
                     member_size: rooms.get(roomId).people.length
                 }));
             }
         })
+    }
+
+    /**
+     * 判断房间是否满员
+     * @param roomId 房间Id
+     */
+    function determineIfTheRoomIsFullyOccupied(roomId){
+        const currentNumberOfPeople = rooms.get(roomId).people.length
+        const numberOfRoomsSet = Number(rooms.get(roomId).TeamSetting.peopleCount)
+        return currentNumberOfPeople < numberOfRoomsSet;
     }
 
     /**
@@ -146,16 +172,34 @@ function GroupChart(request) {
 
     /**
      * 处理分队设置
-     * @param data 包含房间id
+     * @param roomId 房间id
+     * @param TeamSetting 设置信息
      */
-    function handleTeamSettings(data) {
+    function handleTeamSettings(roomId,TeamSetting) {
         // 设置房间号，设置人数
-        const {roomId,numberOfPeople} = data
-
+        const room = rooms.get(roomId)
+        room.TeamSetting = TeamSetting
+        // 发送通知
+        room.people.forEach(function (connection){
+            if(connection !== this){
+                connection.sendUTF(JSON.stringify({
+                    type:'setUp',
+                    nickname:connection.nickname,
+                    data:room.TeamSetting,
+                    msg:'设置好了新的房间信息'
+                }))
+            }
+        })
     }
 
+    // function handleTeam(){
+    //
+    // }
 
-    // 处理发送消息事件
+    /**
+     * 处理发送消息事件
+     * @param data
+     */
     function handleMessage(data) {
         const {roomId, msg} = data;
         const room = rooms.get(roomId);
@@ -171,21 +215,23 @@ function GroupChart(request) {
         }
     }
 
+    /**
+     * 监听消息
+     */
     connection.on("message", function (event) {
         const data = JSON.parse(event.utf8Data);
         if (data.type === "join") {
-            console.log('join')
             handleJoinRoom(data);
         } else if (data.type === "message") {
-            console.log('message')
             handleMessage(data);
         } else if (data.type === "create") {
-            console.log('create')
             handleCreateRoom();
         }else if(data.type === "check"){
             checkRoom(data)
         }else if(data.type === 'out'){
             handleOut()
+        }else if(data.type === 'setUp'){
+            handleTeamSettings(data.roomId,data.TeamSetting)
         }
     });
     connection.on("close", function (event) {

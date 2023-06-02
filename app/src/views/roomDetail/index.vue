@@ -1,76 +1,298 @@
 <template>
   <div>
-    {{ roomId }}
-  </div>
-  在该房间的人
-  <div v-for="item in member">
-    {{ item }}
-  </div>
-  <div>
-    <el-button type="primary" @click="out">退出房间</el-button>
+    <div>
+      房间号：
+      {{ roomId }}
+    </div>
+    <div>
+      房间设置信息：
+      <p>房间容量：{{ peopleCount }}人</p>
+      <p>队伍数量：{{ ranksCount }}队</p>
+    </div>
+    <div>
+      在该房间的人
+      <div v-for="(item, index) in member" :key="index">
+        {{ item }}
+      </div>
+    </div>
+    <div>
+      <el-button type="primary" @click="out">退出房间</el-button>
+    </div>
+    <div>
+      <el-button type="primary" @click="setUp">设置</el-button>
+      <el-dialog
+        v-model="dialogVisible_setUp"
+        :before-close="handleClose"
+        title="设置"
+        width="50%"
+      >
+        <!-- 设置表单 -->
+        <el-form
+          ref="ruleFormRef"
+          :model="form"
+          :rules="rule"
+          label-width="120px"
+        >
+          <el-form-item label="人数" prop="peopleCount">
+            <el-input v-model.number.trim="form.peopleCount" maxlength="3" />
+          </el-form-item>
+          <el-form-item label="队伍数" prop="ranksCount">
+            <el-input v-model.number.trim="form.ranksCount" maxlength="3" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="cancel">取消</el-button>
+            <el-button type="primary" @click="confirmed(ruleFormRef)">
+              确认
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
+    </div>
+    <div>
+      您选择的队伍为：
+      <div
+        class="randomColorBox"
+        :style="{ backgroundColor: selectRanksColor }"
+      ></div>
+      第{{ selectRanksIndex }}队
+    </div>
+    <div>
+      请选择队伍
+      <div ref="colorbox">
+        <div
+          class="randomColorBox"
+          v-for="(color, index) in randomColor"
+          :style="{ backgroundColor: color }"
+          @click="selectColorBox(index)"
+          :key="index"
+        >
+          {{ index + 1 }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import {computed, onBeforeUnmount, onMounted, ref, watch} from "vue";
-import {useStore} from "vuex";
-import {useRouter} from 'vue-router';
-import router from "@/router";
+<script lang="ts" setup>
+import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+import router from "../../router";
+import { ElMessage, FormInstance, FormRules } from "element-plus";
 
-export default {
-  setup() {
-    const store = useStore();
-    const roomId = router.currentRoute.value.params.roomId;
-    const sign = store.state.sign
-    const outIN = ref<boolean>(false) // 判断是否执行了退出操作
-    const ws = ref<WebSocket | null>(null);
-    const member = ref<any>([])
-    const createws = () => {
-      const wss = store.state.websocket
-      ws.value = wss
-      // 监听信息
-      wss.onmessage = (event: { data: string; }) => {
-        const data = JSON.parse(event.data)
-        console.log(data)
-        if (data.type === 'join' || data.type === 'delete' || data.type === 'check') {
-          member.value = data.member.map((item: { nickname: string; }) => item.nickname)
-        }
-      }
-      try {
-        ws.value?.send(JSON.stringify({type: 'join', roomId: roomId}))
-      } catch (e) {
-        console.log(e)
-      }
-    };
-
-    const out = ()=>{
-      ws.value?.send(JSON.stringify({type: 'out'}))
-      outIN.value = true
-      router.replace({
-        name:'JoinRoom'
-      })
-    }
-
-    onMounted(() => {
-      createws()
-    })
-    onBeforeUnmount(() => {
-      if(!outIN.value){
-        // 已经点了按钮就不用再执行退出了，否则就执行
-        console.log('onBeforeUnmount')
-        ws.value?.send(JSON.stringify({type: 'out'}))
-      }
-    })
-    return {
-      member,
-      roomId,
-      createws,
-      out
-    }
+const store = useStore();
+const roomId = router.currentRoute.value.params.roomId;
+const sign = store.state.sign;
+const ruleFormRef = ref<FormInstance>();
+const outIN = ref<boolean>(false); // 判断是否执行了退出操作
+const ws = ref<WebSocket | null>(null);
+const randomColor = ref<any>([]);
+let colorbox = ref<any>(); // 操作dom
+let selectRanksColor = ref<string>("");
+let selectRanksIndex = ref<string>("");
+let dialogVisible_setUp = ref<boolean>(false);
+let ranksCount = ref<string>("");
+let peopleCount = ref<string>("");
+let form = reactive({
+  peopleCount: "",
+  ranksCount: "",
+});
+const member = ref<any>([]);
+/**
+ * 表单校验
+ * @param rule
+ * @param value
+ * @param callback
+ */
+const validateRanksCount = (rule: any, value: any, callback: any) => {
+  if (Number(value) > Number(form.peopleCount)) {
+    callback(new Error("队伍数不能大于人数"));
+  } else if (value === "") {
+    callback(new Error("队伍数不能为空"));
+  } else {
+    callback();
   }
-}
+};
+const validatePeopleCount = (rule: any, value: any, callback: any) => {
+  if (value === "") {
+    callback(new Error("人数不能为空"));
+  } else {
+    callback();
+  }
+};
+// 表单校验
+const rule = reactive<FormRules>({
+  peopleCount: [
+    { type: "number", message: "必须填数字！" },
+    { validator: validatePeopleCount },
+  ],
+  ranksCount: [
+    { type: "number", message: "必须填数字！" },
+    { validator: validateRanksCount },
+  ],
+});
+/**
+ * websorket初始化
+ */
+const createws = () => {
+  const wss = store.state.websocket;
+  ws.value = wss;
+  wss.onmessage = (event: { data: string }) => {
+    const data = JSON.parse(event.data);
+    console.log(data);
+    if (
+      data.type === "join" ||
+      data.type === "delete" ||
+      data.type === "check"
+    ) {
+      member.value = data.member.map(
+        (item: { nickname: string }) => item.nickname
+      );
+      // form = data.TeamSetting
+      try {
+        peopleCount.value = data.TeamSetting.peopleCount;
+        ranksCount.value = data.TeamSetting.ranksCount;
+        randomColor.value = data.TeamSetting.ranksColorList;
+        // handleRandomColor(ranksCount.value)
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    if (data.type === "setUp") {
+      watchSetUp(data);
+      randomColor.value = data.data.ranksColorList;
+      // console.log(randomColor)
+      // handleRandomColor(ranksCount.value)
+    }
+  };
+  try {
+    ws.value?.send(JSON.stringify({ type: "join", roomId: roomId }));
+  } catch (e) {
+    console.log(e);
+  }
+};
+/**
+ * 推出房间按钮
+ */
+const out = () => {
+  ws.value?.send(JSON.stringify({ type: "out" }));
+  outIN.value = true;
+  router.replace({
+    name: "JoinRoom",
+  });
+};
+const setUp = () => {
+  dialogVisible_setUp.value = true;
+  form.peopleCount = peopleCount.value;
+  form.ranksCount = ranksCount.value;
+};
+
+/**
+ * 生成n个随机颜色
+ * @param n 颜色的个数
+ */
+const handleRandomColor = (n: string) => {
+  if (n == "") return;
+  const colors = [];
+  for (let i = 0; i < Number(n); i++) {
+    const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    colors.push(color);
+  }
+  return colors;
+};
+
+/**
+ * 关闭清空
+ */
+const handleClose = () => {
+  // form.ranksCount = "";
+  // form.peopleCount = "";
+  dialogVisible_setUp.value = false;
+};
+/**
+ * 监听到了房间的设置信息
+ * @param data 房间设置信息
+ */
+const watchSetUp = (data: {
+  nickname: string;
+  data: { peopleCount: string; ranksCount: string };
+}) => {
+  peopleCount.value = data.data.peopleCount;
+  ranksCount.value = data.data.ranksCount;
+  // Object.assign(form, data.data);
+
+  ElMessage({
+    message: `${data.nickname}修改了房间设置`,
+    type: "success",
+  });
+};
+
+/**
+ * 点击确认设置房间
+ */
+const confirmed = async (formEl: FormInstance | undefined) => {
+  if (!formEl) return;
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      const TeamSetting = {
+        peopleCount: form.peopleCount,
+        ranksCount: form.ranksCount,
+        ranksColorList: handleRandomColor(form.ranksCount),
+      };
+      ws.value?.send(
+        JSON.stringify({
+          type: "setUp",
+          TeamSetting: TeamSetting,
+          roomId: roomId,
+        })
+      );
+      selectRanksIndex.value = "";
+      selectRanksColor.value = "";
+      dialogVisible_setUp.value = false;
+    } else {
+      ElMessage({
+        message: `请检查好格式后提交`,
+        type: "error",
+      });
+    }
+  });
+};
+
+/**
+ * 取消设置房间
+ */
+const cancel = () => {
+  dialogVisible_setUp.value = false;
+};
+/**
+ * 选中按钮样式
+ * @param index
+ */
+const selectColorBox = (index: number) => {
+  const mycolorDom: HTMLElement[] = Array.from(colorbox.value.children);
+  // 其他颜色恢复正常
+  mycolorDom.forEach((item) => {
+    item.style.opacity = "1";
+  });
+  // 选中颜色变浅
+  mycolorDom[index].style.opacity = "0.5";
+  selectRanksColor.value = mycolorDom[index].style.backgroundColor;
+  selectRanksIndex.value = (index + 1).toString();
+};
+
+onMounted(() => {
+  createws();
+});
+onBeforeUnmount(() => {
+  if (!outIN.value) {
+    // 已经点了按钮就不用再执行退出了，否则就执行
+    ws.value?.send(JSON.stringify({ type: "out" }));
+  }
+});
 </script>
 
-<style scoped>
-
+<style lang="less" scoped>
+@import "./index";
 </style>
