@@ -137,7 +137,6 @@ function GroupChart(request) {
         if (!connection.room || rooms.size === 0) {
             return
         }
-        console.log(`房间人数为${rooms.get(roomId).people.length}`)
         if (rooms.get(roomId).people.length === 1) {
             // 房间里只有一个人且退出该房间时，该房间删除
             rooms.delete(roomId)
@@ -171,6 +170,7 @@ function GroupChart(request) {
             }, this);
         }
         connection.userType = 1 // 退出后就没有房主身份了
+        console.log(`房间人数为${rooms.get(roomId).people.length}`)
     }
 
     /**

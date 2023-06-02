@@ -150,6 +150,7 @@ const createws = () => {
       data.type === "check"
     ) {
       if (data.type === "join" && data.joinType === "fullyOccupied") {
+        outIN.value = true;
         router.replace({
           name: "JoinRoom",
         });
