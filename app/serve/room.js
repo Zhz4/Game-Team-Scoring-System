@@ -23,7 +23,12 @@ function GroupChart(request) {
         connection.userType = 0
         rooms.set(roomId, {
             people: [],
-            TeamSetting: {}
+            // 初始默认房间存6人，分三队
+            TeamSetting: {
+                peopleCount: 6,
+                ranksCount: 3,
+                ranksColorList: ['#FF0000', '#00FF00', '#0000FF']
+            }
         });
         connection.room = roomId
         connection.sendUTF(JSON.stringify({
@@ -61,6 +66,24 @@ function GroupChart(request) {
         const {
             roomId
         } = data;
+        // 设置用户类型，1 为房员
+        // 由于新建房间时建立一个空房间然后再加入房间，该用户已经赋为0了，就不需要赋为1了
+        if (connection.userType === undefined)
+            connection.userType = 1
+        // 如果没有该房间就创建该房间
+        if (!rooms.has(roomId)) {
+            rooms.set(roomId, {
+                people: [],
+                // 初始默认房间存6人，分三队
+                TeamSetting: {
+                    peopleCount: 6,
+                    ranksCount: 3,
+                    ranksColorList: ['#FF0000', '#00FF00', '#0000FF']
+                }
+            });
+            connection.room = roomId
+            connection.userType = 0 // 把该用户设为房主
+        }
         if (determineIfTheRoomIsFullyOccupied(roomId)) {
             connection.sendUTF(JSON.stringify({
                 type: 'join',
@@ -69,17 +92,6 @@ function GroupChart(request) {
             }))
             return;
         }
-        // 设置用户类型，1 为房员
-        // 由于新建房间时建立一个空房间然后再加入房间，该用户已经赋为0了，就不需要赋为1了
-        if (connection.userType === undefined)
-            connection.userType = 1
-        // 如果没有该房间就创建该房间
-        if (!rooms.has(roomId)) {
-            rooms.set(roomId, {
-                people: []
-            });
-            connection.userType = 0 // 把该用户设为房主
-        }
         // 如果该用户已存在该房间，则不加入
         const isItInThisRoom = rooms.get(roomId).people.some(item => item.nickname === connection.nickname)
         if (isItInThisRoom) {
@@ -87,6 +99,7 @@ function GroupChart(request) {
             connection.sendUTF(JSON.stringify({
                 type: "join",
                 msg: `该用户已加入过该房间，请勿重复加入`,
+                roomId: roomId,
                 member: rooms.get(roomId).people.map(item => {
                     return {
                         nickname: item.nickname,
@@ -170,7 +183,11 @@ function GroupChart(request) {
             }, this);
         }
         connection.userType = 1 // 退出后就没有房主身份了
-        console.log(`房间人数为${rooms.get(roomId).people.length}`)
+        try {
+            console.log(`房间人数为${rooms.get(roomId).people.length}`)
+        } catch (e) {
+            console.log('房间人数为0');
+        }
     }
 
     /**

@@ -168,7 +168,6 @@ const createws = () => {
         peopleCount.value = data.TeamSetting.peopleCount;
         ranksCount.value = data.TeamSetting.ranksCount;
         randomColor.value = data.TeamSetting.ranksColorList;
-        // handleRandomColor(ranksCount.value)
       } catch (e) {
         console.log(e);
       }
@@ -178,8 +177,6 @@ const createws = () => {
       randomColor.value = data.data.ranksColorList;
       selectRanksColor.value = "";
       selectRanksColor.value = "";
-      // console.log(randomColor)
-      // handleRandomColor(ranksCount.value)
     }
   };
   try {
