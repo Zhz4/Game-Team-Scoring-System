@@ -28,7 +28,7 @@
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vue/cli-service": "~5.0.0",
     "less": "^4.1.3",
-    "less-loader": "^11.1.0",
+    "less-loader": "^11.1.2",
     "typescript": "~4.5.5"
   },
   "eslintConfig": {

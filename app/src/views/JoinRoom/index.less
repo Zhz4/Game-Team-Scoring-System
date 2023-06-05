@@ -1,0 +1,304 @@
+body {
+    background-color: #10495c;
+}
+
+.header {
+    height: 40px;
+}
+
+// #button(@color){
+//     @hight:40px;
+//     width: 100px;
+//     height: @hight;
+//     border-radius: 10px;
+//     text-align: center;
+//     line-height: @hight;
+//     font-weight: bold;
+//     cursor: pointer;
+//     background-color: @color;
+//     color: #fff;
+// }
+#button(@color) {
+    appearance: none;
+    background-color: transparent;
+    border: 0.125em solid #3b3b3b;
+    border-radius: 0.9375em;
+    box-sizing: border-box;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    font-family: Roobert, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 16px;
+    font-weight: 600;
+    line-height: normal;
+    margin: 0;
+    min-height: 3.75em;
+    min-width: 0;
+    outline: none;
+    padding: 1em 2.3em;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: rgba(0, 0, 0, 0.25) 0 8px 15px;
+    background-color: #1A1A1A;
+    transition: all 300ms cubic-bezier(.23, 1, 0.32, 1);
+
+    &:disabled {
+        pointer-events: none;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        box-shadow: none;
+        transform: translateY(0);
+    }
+}
+
+.content {
+    width: 90%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 50px;
+
+    .left {
+        margin-left: 20px;
+
+        .title {
+            color: #fff;
+            font-size: 50px;
+            font-weight: bold;
+        }
+
+        .button {
+            margin-top: 20px;
+            display: flex;
+            height: 40px;
+            box-sizing: border-box;
+            align-items: center;
+            gap: 30px;
+
+            &-create {
+                #button(#d2ba1d);
+            }
+
+            &-join {
+                .card()
+            }
+        }
+    }
+
+    .right {
+        // border: 3px solid #fff;
+        box-sizing: border-box;
+        width: 700px;
+        height: 700px;
+        margin-right: 50px;
+        // background-color: red;
+        background-image: url('@/assets/image/Winners_Flatline.svg');
+        background-size: 100% 100%;
+    }
+}
+
+
+
+// 加入
+.card {
+    // #a73dbd
+    // #10495c
+    @bgc: #a73dbd;
+    width: 8em;
+    font-family: Montserrat;
+    height: 60px;
+    background: @bgc;
+    box-shadow: inset -25px -25px 0px @bgc, 10px 10px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    border-radius: 15px;
+    transition: .4s ease-in-out;
+
+    &:before {
+        position: relative;
+        text-align: center;
+        content: "Join";
+        color: white;
+        // border-radius: 50%;
+        border-radius: 15px;
+        top: 1.2em;
+        left: 2.85em;
+        font-weight: 600;
+    }
+
+    .heading {
+        opacity: 0;
+        transition: .1s ease-in-out;
+
+        span {
+            transition: .4s ease-in-out;
+        }
+    }
+
+    button {
+        opacity: 0;
+        transition: .001s ease-in-out;
+    }
+
+    &:hover {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        width: 15.4em;
+        height: 10.65em;
+        padding-top: .4em;
+        padding-bottom: 1.5em;
+        background-color: #171717;
+        border-radius: 20px;
+        box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 2px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -1px 0px inset;
+        background: linear-gradient(270deg, #ce68d9, #45c6db, #45db79);
+        background-size: 800% 800%;
+        -webkit-animation: AnimationName 3s ease infinite;
+        -moz-animation: AnimationName 3s ease infinite;
+        animation: AnimationName 3s ease infinite;
+        transition: .4s ease-in-out;
+    }
+
+    &:hover .heading {
+        opacity: 1;
+        transition: .8s ease-in-out;
+    }
+
+    &:hover .content {
+        opacity: 1;
+        transition: .8s ease-in-out;
+    }
+
+    &:hover button {
+        opacity: 1;
+        transition: .4s ease-in-out;
+    }
+
+    &:hover::before {
+        opacity: 0;
+    }
+
+    .heading {
+        display: flex;
+        flex-direction: column;
+        color: white;
+        font-size: 1em;
+        text-align: center;
+        padding-bottom: 1em;
+        font-weight: bold;
+        transition: .4s ease-in-out;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 1em;
+    }
+
+    button {
+        padding: 0.8em;
+        width: 14em;
+        border-radius: 10px;
+        align-self: center;
+        outline: none;
+        font-weight: bold;
+        border: 1px solid white;
+        background-color: transparent;
+        color: white;
+        transition: .4s ease-in-out;
+        &::after {
+            content: "(Hold Me)";
+            opacity: 0;
+            position: absolute;
+        }
+
+        &::before {
+            content: "∞";
+            font-size: 3.5em;
+            position: absolute;
+            opacity: 0;
+            left: 1.6em;
+            top: -0.33em;
+            transition: .4s ease-in-out;
+        }
+
+        &:hover {
+            cursor: pointer;
+            color: black;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+
+            &::after {
+                position: relative;
+                opacity: 1;
+                font-size: 0.7em;
+            }
+        }
+
+        &:active {
+            scale: 1.1;
+            opacity: 1;
+            color: transparent;
+            background: linear-gradient(90deg, #ce68d9, #45c6db, #45db79, #9f45b0, #e54ed0, #ffe4f2);
+            background-size: 800% 800%;
+            -webkit-animation: AnimationName 1s ease infinite;
+            -moz-animation: AnimationName 1s ease infinite;
+            animation: AnimationName 1s ease infinite;
+        }
+
+        &:active::before {
+            color: white;
+            opacity: 1;
+        }
+    }
+}
+
+@keyframes gradient_6346 {
+    to {
+        background-position: 200% center;
+    }
+}
+
+@keyframes AnimationName {
+    0% {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+}
+
+
+//  输入框
+.input {
+    max-width: 190px;
+    height: 44px;
+    color: #444242dc;
+    background-color: #57585b0a;
+    border-radius: .5rem;
+    padding: 0 1rem;
+    border: 2px solid transparent;
+    font-size: 1rem;
+    transition: border-color .3s cubic-bezier(.25, .01, .25, 1) 0s, color .3s cubic-bezier(.25, .01, .25, 1) 0s, background .2s cubic-bezier(.25, .01, .25, 1) 0s;
+    &:hover,
+    &:focus,
+    .input-group:hover & {
+        outline: none;
+    }
+}
