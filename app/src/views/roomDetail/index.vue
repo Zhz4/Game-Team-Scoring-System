@@ -50,7 +50,17 @@
         </template>
       </el-dialog>
     </div>
+    <!-- 开始游戏 -->
+    <div class="startgame">
+      <el-button type="primary" @click="startGame = 1">开始比赛</el-button>
+      <el-button type="primary" @click="startGame = 2">暂停比赛</el-button>
+      <el-button type="primary" @click="startGame = 0">结束比赛</el-button>
+    </div>
     <div>
+      <el-input v-model="score" placeholder="请输入分数" />
+      <el-button type="primary" @click="scoreConfirmation">确认</el-button>
+    </div>
+    <div v-if="startGame !== 1">
       您选择的队伍为：
       <div
         class="randomColorBox"
@@ -58,13 +68,13 @@
       ></div>
       第{{ selectRanksIndex }}队
     </div>
-    <div>
+    <div v-if="startGame !== 1">
       请选择队伍
       <div ref="colorbox">
         <div
           class="randomColorBox"
-          v-for="(color, index) in randomColor"
-          :style="{ backgroundColor: color }"
+          v-for="(item, index) in randomColor"
+          :style="{ backgroundColor: item.color }"
           @click="selectColorBox(index)"
           :key="index"
         >
@@ -72,15 +82,56 @@
         </div>
       </div>
     </div>
+    <div v-if="startGame !== 1">
+      <div>分队情况</div>
+      <div class="clearfix" v-for="(item, index) in sortedScore" :key="index">
+        <div
+          class="randomColorBox fl"
+          :style="{ backgroundColor: item.color }"
+        ></div>
+        <div
+          class="fl"
+          v-for="(item_member, index) in item.member"
+          :key="index"
+        >
+          {{ item_member }}
+        </div>
+      </div>
+    </div>
+    <!-- 排行榜 -->
+    排行榜
+    <div class="ranking" v-for="(item, index) in sortedScore" :key="index">
+      <!-- 颜色 -->
+      <div
+        class="randomColorBox"
+        :style="{ backgroundColor: item.color }"
+      ></div>
+      <!-- 名字 -->
+      <div class="name">队伍名称：{{ item.name }}</div>
+      <!-- 分数 -->
+      <div class="score">队伍得分：{{ item.score }}</div>
+      <!-- 队员 -->
+      <div class="member">
+        队员：
+        <div
+          v-for="(item_member, index_member) in item.member"
+          :key="index_member"
+        >
+          {{ item_member }}
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, reactive, ref } from "vue";
+import { onBeforeUnmount, onMounted, reactive, ref, computed } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
+import { Team } from "../../interface/setUp";
+import { fullColorHex } from "../../util/colorConvert";
 
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
@@ -89,6 +140,8 @@ const ruleFormRef = ref<FormInstance>();
 const outIN = ref<boolean>(false); // 判断是否执行了退出操作
 const ws = ref<WebSocket | null>(null);
 const randomColor = ref<any>([]);
+const score = ref<string>("");
+const startGame = ref<number>(0); // 是否开始游戏 0：结束 1：开始 2：暂停
 let colorbox = ref<any>(); // 操作dom
 let selectRanksColor = ref<string>("");
 let selectRanksIndex = ref<string>("");
@@ -142,6 +195,7 @@ const createws = () => {
   const wss = store.state.websocket;
   ws.value = wss;
   wss.onmessage = (event: { data: string }) => {
+    // TODO 监听数据
     const data = JSON.parse(event.data);
     console.log(data);
     if (
@@ -168,6 +222,7 @@ const createws = () => {
         peopleCount.value = data.TeamSetting.peopleCount;
         ranksCount.value = data.TeamSetting.ranksCount;
         randomColor.value = data.TeamSetting.ranksColorList;
+        randomColor.value = data.TeamSetting.ranksColorList;
       } catch (e) {
         console.log(e);
       }
@@ -177,6 +232,12 @@ const createws = () => {
       randomColor.value = data.data.ranksColorList;
       selectRanksColor.value = "";
       selectRanksColor.value = "";
+    }
+    if (data.type === "selectTeam") {
+      randomColor.value = data.TeamSetting.ranksColorList;
+    }
+    if (data.type === "addScore") {
+      randomColor.value = data.TeamSetting.ranksColorList;
     }
   };
   try {
@@ -202,17 +263,52 @@ const setUp = () => {
 };
 
 /**
+ * 点击确认分数
+ */
+const scoreConfirmation = () => {
+  // TODO 点击确认分数
+  if (score.value === "") {
+    ElMessage({
+      type: "warning",
+      message: "分数不能为空",
+    });
+    return;
+  }
+  if (selectRanksIndex.value === "" && selectRanksColor.value === "") {
+    ElMessage({
+      type: "warning",
+      message: "请选择队伍",
+    });
+    return;
+  }
+  ws.value?.send(
+    JSON.stringify({
+      type: "addScore",
+      score: Number(score.value),
+      roomId: roomId,
+    })
+  );
+  score.value = "";
+};
+
+/**
  * 生成n个随机颜色
  * @param n 颜色的个数
  */
 const handleRandomColor = (n: string) => {
+  // TODO 生成随机颜色标记
   if (n == "") return;
-  const colors = [];
+  const teams: Array<object> = [];
   for (let i = 0; i < Number(n); i++) {
+    let team = <Team>{};
     const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
-    colors.push(color);
+    team.color = color;
+    team.name = color;
+    team.member = [];
+    team.score = 0;
+    teams.push(team);
   }
-  return colors;
+  return teams;
 };
 
 /**
@@ -290,12 +386,26 @@ const selectColorBox = (index: number) => {
   });
   // 选中颜色变浅
   mycolorDom[index].style.opacity = "0.5";
-  selectRanksColor.value = mycolorDom[index].style.backgroundColor;
+  const rgb: string = mycolorDom[index].style.backgroundColor;
+  selectRanksColor.value = fullColorHex(rgb);
   selectRanksIndex.value = (index + 1).toString();
+  ws.value?.send(
+    JSON.stringify({
+      type: "selectTeam",
+      color: selectRanksColor.value,
+      roomId: roomId,
+    })
+  );
 };
-
+/**
+ * 排行榜按照分数排序
+ */
+const sortedScore = computed(() => {
+  return randomColor.value.sort((a: any, b: any) => b.score - a.score);
+});
 onMounted(() => {
   createws();
+  document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";
 });
 onBeforeUnmount(() => {
   if (!outIN.value) {
@@ -307,4 +417,5 @@ onBeforeUnmount(() => {
 
 <style lang="less" scoped>
 @import "./index";
+@import "@/assets/less/base.less";
 </style>

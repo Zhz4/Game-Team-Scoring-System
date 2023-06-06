@@ -103,6 +103,7 @@ export default {
     };
 
     onMounted(() => {
+      document.getElementsByTagName("body")[0].className = "add_bg_JoinRoom";
       createws();
     });
     return {

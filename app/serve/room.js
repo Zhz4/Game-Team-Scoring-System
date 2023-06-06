@@ -17,6 +17,7 @@ function GroupChart(request) {
      * 处理创建新房间事件
      */
     function handleCreateRoom() {
+        // TODO 创建房间
         const roomId = Date.now().toString(); // 使用当前时间戳作为房间号创建新房间
         // 将当前连接加入房间的用户集合中
         // 设置用户类型，0 为房主
@@ -27,10 +28,27 @@ function GroupChart(request) {
             TeamSetting: {
                 peopleCount: 6,
                 ranksCount: 3,
-                ranksColorList: ['#FF0000', '#00FF00', '#0000FF']
+                // '#FF0000', '#00FF00', '#0000FF'
+                ranksColorList: [{
+                    name: '#FF0000',
+                    color: '#FF0000',
+                    score: 0,
+                    member: []
+                }, {
+                    name: '#00FF00',
+                    color: '#00FF00',
+                    score: 0,
+                    member: []
+                }, {
+                    name: '#0000FF',
+                    color: '#0000FF',
+                    score: 0,
+                    member: []
+                }]
             }
         });
         connection.room = roomId
+        connection.ranks = ''
         connection.sendUTF(JSON.stringify({
             type: "create",
             roomId: roomId,
@@ -48,6 +66,7 @@ function GroupChart(request) {
         connection.sendUTF(JSON.stringify({
             type: "check",
             roomId: roomId,
+            TeamSetting: rooms.get(roomId).TeamSetting,
             member: rooms.get(roomId).people.map(item => {
                 return {
                     nickname: item.nickname,
@@ -63,6 +82,7 @@ function GroupChart(request) {
      * @param data
      */
     function handleJoinRoom(data) {
+        // TODO 加入房间
         const {
             roomId
         } = data;
@@ -78,10 +98,26 @@ function GroupChart(request) {
                 TeamSetting: {
                     peopleCount: 6,
                     ranksCount: 3,
-                    ranksColorList: ['#FF0000', '#00FF00', '#0000FF']
+                    ranksColorList: [{
+                        name: '#FF0000',
+                        color: '#FF0000',
+                        score: 0,
+                        member: []
+                    }, {
+                        name: '#00FF00',
+                        color: '#00FF00',
+                        score: 0,
+                        member: []
+                    }, {
+                        name: '#0000FF',
+                        color: '#0000FF',
+                        score: 0,
+                        member: []
+                    }]
                 }
             });
             connection.room = roomId
+            connection.ranks = ''
             connection.userType = 0 // 把该用户设为房主
         }
         if (determineIfTheRoomIsFullyOccupied(roomId)) {
@@ -141,6 +177,22 @@ function GroupChart(request) {
         return currentNumberOfPeople >= numberOfRoomsSet;
     }
 
+
+    /**
+     * 清空用户的组队信息
+     * @param {房间Id} roomId 
+     */
+    function clearUserSTeamingInformation(roomId) {
+        connection.ranks = ''
+        const nickname = connection.nickname
+        rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
+            const index = item.member.indexOf(nickname);
+            if (index !== -1) {
+                item.member.splice(index, 1);
+            }
+        });
+    }
+
     /**
      * 处理退出房间
      */
@@ -150,6 +202,7 @@ function GroupChart(request) {
         if (!connection.room || rooms.size === 0) {
             return
         }
+        clearUserSTeamingInformation(roomId)
         if (rooms.get(roomId).people.length === 1) {
             // 房间里只有一个人且退出该房间时，该房间删除
             rooms.delete(roomId)
@@ -171,6 +224,7 @@ function GroupChart(request) {
                     connection.sendUTF(JSON.stringify({
                         type: "delete",
                         msg: `${nickname}退出该房间`,
+                        TeamSetting: rooms.get(roomId).TeamSetting,
                         member: rooms.get(roomId).people.map(item => {
                             return {
                                 nickname: item.nickname,
@@ -211,6 +265,7 @@ function GroupChart(request) {
         // 设置房间号，设置人数
         const room = rooms.get(roomId)
         room.TeamSetting = TeamSetting
+        // console.log(TeamSetting);
         // 发送通知
         room.people.forEach(function (connection) {
             if (connection !== this) {
@@ -224,10 +279,59 @@ function GroupChart(request) {
         })
     }
 
-    // function handleTeam(){
-    //
-    // }
+    /**
+     * 选择队伍
+     * @param name 队伍名
+     * @param roomId 房间Id
+     */
+    function selectTeam(color, roomId) {
+        // TODO 选择队伍
+        const nickname = connection.nickname;
+        clearUserSTeamingInformation(roomId)
+        rooms.get(roomId).TeamSetting.ranksColorList
+        const room_teamSetting = rooms.get(roomId).TeamSetting.ranksColorList.find(item => item.color.toLowerCase() === color.toLowerCase())
+        const member_set = new Set(room_teamSetting.member)
+        member_set.add(nickname)
+        // room_teamSetting.member.add(nickname)
+        room_teamSetting.member = Array.from(member_set)
+        connection.ranks = color
+        // 房间内广播通知
+        rooms.get(roomId).people.forEach(function (connection) {
+            if (connection !== this) {
+                connection.sendUTF(JSON.stringify({
+                    type: 'selectTeam',
+                    TeamSetting: rooms.get(roomId).TeamSetting
+                }))
+            }
+        })
+    }
 
+    /**
+     * 设置分数
+     * @param {所加分数} score 
+     * @param {房间Id} roomId 
+     */
+    function addScore(score, roomId) {
+        // TODO 设置分数
+        // 该用户所在的队伍
+        const ranks = connection.ranks
+        // 在原来分数的基础上加分
+        rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
+            if (item.color.toLowerCase() === ranks.toLowerCase()) {
+                item.score += score
+                return false;
+            }
+        })
+        // 返回到前端该房间的所有用户
+        rooms.get(roomId).people.forEach(function (connection) {
+            if (connection !== this) {
+                connection.sendUTF(JSON.stringify({
+                    type: 'addScore',
+                    TeamSetting: rooms.get(roomId).TeamSetting
+                }))
+            }
+        })
+    }
     /**
      * 处理发送消息事件
      * @param data
@@ -256,6 +360,7 @@ function GroupChart(request) {
         }
     }
 
+
     /**
      * 监听消息
      */
@@ -273,6 +378,10 @@ function GroupChart(request) {
             handleOut()
         } else if (data.type === 'setUp') {
             handleTeamSettings(data.roomId, data.TeamSetting)
+        } else if (data.type === 'selectTeam') {
+            selectTeam(data.color, data.roomId)
+        } else if (data.type === 'addScore') {
+            addScore(data.score, data.roomId)
         }
     });
     connection.on("close", function (event) {
