@@ -52,11 +52,17 @@
     </div>
     <!-- 开始游戏 -->
     <div class="startgame">
-      <el-button type="primary" @click="startGame = 1">开始比赛</el-button>
-      <el-button type="primary" @click="startGame = 2">暂停比赛</el-button>
-      <el-button type="primary" @click="startGame = 0">结束比赛</el-button>
+      <el-button type="primary" @click="theBeginningAndEndOfTheGame(1)"
+        >开始比赛</el-button
+      >
+      <el-button type="primary" @click="theBeginningAndEndOfTheGame(2)"
+        >暂停比赛</el-button
+      >
+      <el-button type="primary" @click="theBeginningAndEndOfTheGame(0)"
+        >结束比赛</el-button
+      >
     </div>
-    <div>
+    <div v-if="startGame === 1">
       <el-input v-model="score" placeholder="请输入分数" />
       <el-button type="primary" @click="scoreConfirmation">确认</el-button>
     </div>
@@ -239,6 +245,14 @@ const createws = () => {
     if (data.type === "addScore") {
       randomColor.value = data.TeamSetting.ranksColorList;
     }
+    // TODO 监听到开始/暂停/结束比赛的消息
+    if (data.type === "theBeginningAndEndOfTheGame") {
+      startGame.value = data.Gtype;
+      if (data.Gtype === 0) {
+        randomColor.value = data.TeamSetting.ranksColorList;
+      }
+      notification(data.Gtype);
+    }
   };
   try {
     ws.value?.send(JSON.stringify({ type: "join", roomId: roomId }));
@@ -403,6 +417,42 @@ const selectColorBox = (index: number) => {
 const sortedScore = computed(() => {
   return randomColor.value.sort((a: any, b: any) => b.score - a.score);
 });
+
+/**
+ * 比赛通知
+ * @param Gtype 通知类型 1：开始比赛 2：暂停比赛 3：结束比赛
+ */
+const notification = (Gtype: number) => {
+  const typeArray = ["结束比赛", "开始比赛", "暂停比赛"];
+  ElMessage({
+    type: "success",
+    message: typeArray[Gtype],
+  });
+};
+
+/**
+ * 开始/暂停/结束比赛并发送给后端
+ */
+const theBeginningAndEndOfTheGame = (Gtype: number) => {
+  // TODO 开始/暂停/结束比赛按钮
+  // 判断是否选择了队伍
+  if (selectRanksIndex.value === "" && selectRanksColor.value === "") {
+    ElMessage({
+      type: "warning",
+      message: "请选择队伍",
+    });
+    return;
+  }
+  startGame.value = Gtype;
+  // notification(Gtype);
+  ws.value?.send(
+    JSON.stringify({
+      type: "theBeginningAndEndOfTheGame",
+      roomId: roomId,
+      Gtype: Gtype,
+    })
+  );
+};
 onMounted(() => {
   createws();
   document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";

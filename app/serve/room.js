@@ -285,7 +285,6 @@ function GroupChart(request) {
      * @param roomId 房间Id
      */
     function selectTeam(color, roomId) {
-        // TODO 选择队伍
         const nickname = connection.nickname;
         clearUserSTeamingInformation(roomId)
         rooms.get(roomId).TeamSetting.ranksColorList
@@ -312,7 +311,6 @@ function GroupChart(request) {
      * @param {房间Id} roomId 
      */
     function addScore(score, roomId) {
-        // TODO 设置分数
         // 该用户所在的队伍
         const ranks = connection.ranks
         // 在原来分数的基础上加分
@@ -360,6 +358,46 @@ function GroupChart(request) {
         }
     }
 
+    /**
+     * 游戏的开始与结束
+     * @param {类型,0结束游戏,1开始游戏,2暂停游戏} type
+     * @param {房间Id} roomId
+     */
+    function theBeginningAndEndOfTheGame(Gtype, roomId) {
+        const typeArray = ['结束比赛', '开始比赛', '暂停比赛']
+        // 开始或暂停比赛则通知房间内成员
+        // 开始比赛后不能更换队伍，暂停比赛可以更换队伍
+        if (Gtype === 1 || Gtype === 2) {
+            rooms.get(roomId).people.forEach(function (connection) {
+                if (connection !== this) {
+                    connection.sendUTF(JSON.stringify({
+                        type: 'theBeginningAndEndOfTheGame',
+                        msg: typeArray[Gtype],
+                        Gtype: Gtype,
+                    }))
+                }
+            })
+        }
+        // 结束比赛则清空分数信息，并且可以更换队伍
+        // 组队信息不需要清空
+        if (Gtype === 0) {
+            rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
+                item.score = 0
+            })
+            rooms.get(roomId).people.forEach(function (connection) {
+                if (connection !== this) {
+                    connection.sendUTF(JSON.stringify({
+                        type: 'theBeginningAndEndOfTheGame',
+                        msg: typeArray[Gtype],
+                        Gtype: Gtype,
+                        TeamSetting: rooms.get(roomId).TeamSetting
+                    }))
+                }
+            })
+        }
+
+
+    }
 
     /**
      * 监听消息
@@ -382,6 +420,8 @@ function GroupChart(request) {
             selectTeam(data.color, data.roomId)
         } else if (data.type === 'addScore') {
             addScore(data.score, data.roomId)
+        } else if (data.type === 'theBeginningAndEndOfTheGame') {
+            theBeginningAndEndOfTheGame(data.Gtype, data.roomId)
         }
     });
     connection.on("close", function (event) {
