@@ -1,138 +1,184 @@
 <template>
-  <div>
-    <div>
-      房间号：
-      {{ roomId }}
-    </div>
-    <div>
-      房间设置信息：
-      <p>房间容量：{{ peopleCount }}人</p>
-      <p>队伍数量：{{ ranksCount }}队</p>
-    </div>
-    <div>
-      在该房间的人
-      <div v-for="(item, index) in member" :key="index">
-        {{ item }}
-      </div>
-    </div>
-    <div>
-      <el-button type="primary" @click="out">退出房间</el-button>
-    </div>
-    <div>
-      <el-button type="primary" @click="setUp">设置</el-button>
-      <el-dialog
-        v-model="dialogVisible_setUp"
-        :before-close="handleClose"
-        title="设置"
-        width="50%"
-      >
-        <!-- 设置表单 -->
-        <el-form
-          ref="ruleFormRef"
-          :model="form"
-          :rules="rule"
-          label-width="120px"
-        >
-          <el-form-item label="人数" prop="peopleCount">
-            <el-input v-model.number.trim="form.peopleCount" maxlength="3" />
-          </el-form-item>
-          <el-form-item label="队伍数" prop="ranksCount">
-            <el-input v-model.number.trim="form.ranksCount" maxlength="3" />
-          </el-form-item>
-        </el-form>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="cancel">取消</el-button>
-            <el-button type="primary" @click="confirmed(ruleFormRef)">
-              确认
-            </el-button>
+  <div id="operatingBox1">
+    <el-container id="operatingBox">
+      <!-- TODO 上面 -->
+      <el-header class="top">
+        <!-- 放置基础信息 -->
+        <!-- 房间号 -->
+        <div class="roomNumber">
+          <span> 房间号:</span>
+          <span>
+            {{ roomId }}
           </span>
-        </template>
-      </el-dialog>
-    </div>
-    <!-- 开始游戏 -->
-    <div class="startgame">
-      <el-button type="primary" @click="theBeginningAndEndOfTheGame(1)"
-        >开始比赛</el-button
-      >
-      <el-button type="primary" @click="theBeginningAndEndOfTheGame(2)"
-        >暂停比赛</el-button
-      >
-      <el-button type="primary" @click="theBeginningAndEndOfTheGame(0)"
-        >结束比赛</el-button
-      >
-    </div>
-    <div v-if="startGame === 1">
-      <el-input v-model="score" placeholder="请输入分数" />
-      <el-button type="primary" @click="scoreConfirmation">确认</el-button>
-    </div>
-    <div v-if="startGame !== 1">
-      您选择的队伍为：
-      <div
-        class="randomColorBox"
-        :style="{ backgroundColor: selectRanksColor }"
-      ></div>
-      第{{ selectRanksIndex }}队
-    </div>
-    <div v-if="startGame !== 1">
-      请选择队伍
-      <div ref="colorbox">
-        <div
-          class="randomColorBox"
-          v-for="(item, index) in randomColor"
-          :style="{ backgroundColor: item.color }"
-          @click="selectColorBox(index)"
-          :key="index"
-        >
-          {{ index + 1 }}
         </div>
-      </div>
-    </div>
-    <div v-if="startGame !== 1">
-      <div>分队情况</div>
-      <div class="clearfix" v-for="(item, index) in sortedScore" :key="index">
-        <div
-          class="randomColorBox fl"
-          :style="{ backgroundColor: item.color }"
-        ></div>
-        <div
-          class="fl"
-          v-for="(item_member, index) in item.member"
-          :key="index"
-        >
-          {{ item_member }}
+
+        <!-- 开始游戏 -->
+        <div class="startgame">
+          <el-button type="primary" @click="theBeginningAndEndOfTheGame(1)"
+            >开始比赛</el-button
+          >
+          <el-button type="primary" @click="theBeginningAndEndOfTheGame(2)"
+            >暂停比赛</el-button
+          >
+          <el-button type="primary" @click="theBeginningAndEndOfTheGame(0)"
+            >结束比赛</el-button
+          >
         </div>
-      </div>
-    </div>
-    <!-- 排行榜 -->
-    排行榜
-    <div class="ranking" v-for="(item, index) in sortedScore" :key="index">
-      <!-- 颜色 -->
-      <div
-        class="randomColorBox"
-        :style="{ backgroundColor: item.color }"
-      ></div>
-      <!-- 名字 -->
-      <div class="name">队伍名称：{{ item.name }}</div>
-      <!-- 分数 -->
-      <div class="score">队伍得分：{{ item.score }}</div>
-      <!-- 队员 -->
-      <div class="member">
-        队员：
-        <div
-          v-for="(item_member, index_member) in item.member"
-          :key="index_member"
-        >
-          {{ item_member }}
+      </el-header>
+      <el-container>
+        <!-- TODO 左侧边 -->
+        <el-aside class="left">
+          <div v-if="startGame !== 1">
+            您选择的队伍为：
+            <div
+              class="randomColorBox"
+              :style="{ backgroundColor: selectRanksColor }"
+            ></div>
+            第{{ selectRanksIndex }}队
+          </div>
+          <div v-if="startGame !== 1">
+            请选择队伍
+            <div ref="colorbox">
+              <div
+                class="randomColorBox"
+                v-for="(item, index) in randomColor"
+                :style="{ backgroundColor: item.color }"
+                @click="selectColorBox(index)"
+                :key="index"
+              >
+                {{ index + 1 }}
+              </div>
+            </div>
+          </div>
+          <div v-if="startGame !== 1">
+            <div>分队情况</div>
+            <div
+              class="clearfix"
+              v-for="(item, index) in sortedScore"
+              :key="index"
+            >
+              <div
+                class="randomColorBox fl"
+                :style="{ backgroundColor: item.color }"
+              ></div>
+              <div
+                class="fl"
+                v-for="(item_member, index) in item.member"
+                :key="index"
+              >
+                {{ item_member }}
+              </div>
+            </div>
+          </div>
+          <!-- 房间操作 -->
+          <div>
+            <el-icon class="icon" size="30" @click="setUp"><SetUp /></el-icon>
+            <!-- <el-icon class="icon" size="30" @click="setUp"><Setting /></el-icon> -->
+            <el-dialog
+              v-model="dialogVisible_setUp"
+              :before-close="handleClose"
+              title="设置"
+              width="50%"
+            >
+              <!-- 设置表单 -->
+              <el-form
+                ref="ruleFormRef"
+                :model="form"
+                :rules="rule"
+                label-width="120px"
+              >
+                <el-form-item label="人数" prop="peopleCount">
+                  <el-input
+                    v-model.number.trim="form.peopleCount"
+                    maxlength="3"
+                  />
+                </el-form-item>
+                <el-form-item label="队伍数" prop="ranksCount">
+                  <el-input
+                    v-model.number.trim="form.ranksCount"
+                    maxlength="3"
+                  />
+                </el-form-item>
+              </el-form>
+              <template #footer>
+                <span class="dialog-footer">
+                  <el-button @click="cancel">取消</el-button>
+                  <el-button type="primary" @click="confirmed(ruleFormRef)">
+                    确认
+                  </el-button>
+                </span>
+              </template>
+            </el-dialog>
+          </div>
+          <!-- 退出房间 -->
+          <svg-icon class="icon" icon-class="out" @click="out"></svg-icon>
+          <!-- <el-button type="primary" @click="out">退出房间</el-button> -->
+        </el-aside>
+        <!-- TODO 中间 -->
+        <el-main class="main">
+          <!-- 排行榜 -->
+          排行榜
+          <div
+            class="ranking"
+            v-for="(item, index) in sortedScore"
+            :key="index"
+          >
+            <!-- 颜色 -->
+            <div
+              class="randomColorBox"
+              :style="{ backgroundColor: item.color }"
+            ></div>
+            <!-- 名字 -->
+            <div class="name">队伍名称：{{ item.name }}</div>
+            <!-- 分数 -->
+            <div class="score">队伍得分：{{ item.score }}</div>
+            <!-- 队员 -->
+            <div class="member">
+              队员：
+              <div
+                v-for="(item_member, index_member) in item.member"
+                :key="index_member"
+              >
+                {{ item_member }}
+              </div>
+            </div>
+          </div>
+          <div v-if="startGame === 1">
+            <el-input v-model="score" placeholder="请输入分数" />
+            <el-button type="primary" @click="scoreConfirmation"
+              >确认</el-button
+            >
+          </div>
+        </el-main>
+        <!-- TODO 右侧边 -->
+        <div class="right">
+          <div>
+            <div>
+              <svg-icon class="iconDisabled" icon-class="people"></svg-icon>
+              <span>房间容量：{{ peopleCount }}人</span>
+            </div>
+            <div>
+              <svg-icon class="iconDisabled" icon-class="teamcount"></svg-icon>
+              <span>队伍数量：{{ ranksCount }}队</span>
+            </div>
+          </div>
+          <div>
+            <p>在线人员:</p>
+            <div v-for="(item, index) in member" :key="index">
+              {{ item }}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </el-container>
+    </el-container>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onBeforeUnmount, onMounted, reactive, ref, computed } from "vue";
 import { useStore } from "vuex";
+// TODO 图标
+import { Setting, SetUp } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
@@ -453,9 +499,9 @@ const theBeginningAndEndOfTheGame = (Gtype: number) => {
     })
   );
 };
+// document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";
 onMounted(() => {
   createws();
-  document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";
 });
 onBeforeUnmount(() => {
   if (!outIN.value) {
