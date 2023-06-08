@@ -116,33 +116,12 @@
         </el-aside>
         <!-- TODO 中间 -->
         <el-main class="main">
+          <!-- TODO echart 实例 -->
+          <div class="echarts-box"></div>
+          <div id="myEcharts" style="width: 600px; height: 400px"></div>
           <!-- 排行榜 -->
           排行榜
-          <div
-            class="ranking"
-            v-for="(item, index) in sortedScore"
-            :key="index"
-          >
-            <!-- 颜色 -->
-            <div
-              class="randomColorBox"
-              :style="{ backgroundColor: item.color }"
-            ></div>
-            <!-- 名字 -->
-            <div class="name">队伍名称：{{ item.name }}</div>
-            <!-- 分数 -->
-            <div class="score">队伍得分：{{ item.score }}</div>
-            <!-- 队员 -->
-            <div class="member">
-              队员：
-              <div
-                v-for="(item_member, index_member) in item.member"
-                :key="index_member"
-              >
-                {{ item_member }}
-              </div>
-            </div>
-          </div>
+
           <div v-if="startGame === 1">
             <el-input v-model="score" placeholder="请输入分数" />
             <el-button type="primary" @click="scoreConfirmation"
@@ -184,7 +163,9 @@ import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
 import { Team } from "../../interface/setUp";
 import { fullColorHex } from "../../util/colorConvert";
-
+import { updateColumnChartEChart } from "../../util/echart";
+// TODO echart
+import * as echarts from "echarts";
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
 const sign = store.state.sign;
@@ -205,6 +186,8 @@ let form = reactive({
   ranksCount: "",
 });
 const member = ref<any>([]);
+// 初始化chart
+const chart = ref<any>();
 /**
  * 表单校验
  * @param rule
@@ -275,6 +258,7 @@ const createws = () => {
         ranksCount.value = data.TeamSetting.ranksCount;
         randomColor.value = data.TeamSetting.ranksColorList;
         randomColor.value = data.TeamSetting.ranksColorList;
+        updateColumnChartEChart(chart.value, randomColor.value);
       } catch (e) {
         console.log(e);
       }
@@ -284,18 +268,21 @@ const createws = () => {
       randomColor.value = data.data.ranksColorList;
       selectRanksColor.value = "";
       selectRanksColor.value = "";
+      updateColumnChartEChart(chart.value, randomColor.value);
     }
     if (data.type === "selectTeam") {
       randomColor.value = data.TeamSetting.ranksColorList;
     }
     if (data.type === "addScore") {
       randomColor.value = data.TeamSetting.ranksColorList;
+      updateColumnChartEChart(chart.value, randomColor.value);
     }
     // TODO 监听到开始/暂停/结束比赛的消息
     if (data.type === "theBeginningAndEndOfTheGame") {
       startGame.value = data.Gtype;
       if (data.Gtype === 0) {
         randomColor.value = data.TeamSetting.ranksColorList;
+        updateColumnChartEChart(chart.value, randomColor.value);
       }
       notification(data.Gtype);
     }
@@ -502,6 +489,10 @@ const theBeginningAndEndOfTheGame = (Gtype: number) => {
 // document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";
 onMounted(() => {
   createws();
+  const chartElement = document.getElementById("myEcharts");
+  if (chartElement instanceof HTMLElement) {
+    chart.value = echarts.init(chartElement, "dark");
+  }
 });
 onBeforeUnmount(() => {
   if (!outIN.value) {
