@@ -3,148 +3,243 @@
     <el-container id="operatingBox">
       <!-- TODO 上面 -->
       <el-header class="top">
-        <!-- 放置基础信息 -->
-        <!-- 房间号 -->
-        <div class="roomNumber">
-          <span> 房间号:</span>
-          <span>
-            {{ roomId }}
-          </span>
-        </div>
+        <div class="top-box">
+          <!-- 放置基础信息 -->
+          <!-- 房间号 -->
+          <div class="roomNumber">
+            <span> 房间号:</span>
+            <span>
+              {{ roomId }}
+            </span>
+          </div>
 
-        <!-- 开始游戏 -->
-        <div class="startgame">
-          <el-button type="primary" @click="theBeginningAndEndOfTheGame(1)"
-            >开始比赛</el-button
-          >
-          <el-button type="primary" @click="theBeginningAndEndOfTheGame(2)"
-            >暂停比赛</el-button
-          >
-          <el-button type="primary" @click="theBeginningAndEndOfTheGame(0)"
-            >结束比赛</el-button
-          >
+          <!-- 开始游戏 -->
+          <div class="gameButton">
+            <svg-icon
+              title="开始比赛"
+              class="icon"
+              style="width: 50px; height: 50px"
+              icon-class="startgame"
+            ></svg-icon>
+            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(1)"
+              >开始比赛</el-button
+            > -->
+            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(2)"
+              >暂停比赛</el-button
+            > -->
+            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(0)"
+              >结束比赛</el-button> -->
+          </div>
+
+          <!-- 右侧盒子 -->
+          <div class="right"></div>
         </div>
       </el-header>
       <el-container>
         <!-- TODO 左侧边 -->
         <el-aside class="left">
-          <div v-if="startGame !== 1">
-            您选择的队伍为：
-            <div
-              class="randomColorBox"
-              :style="{ backgroundColor: selectRanksColor }"
-            ></div>
-            第{{ selectRanksIndex }}队
-          </div>
-          <div v-if="startGame !== 1">
-            请选择队伍
-            <div ref="colorbox">
-              <div
-                class="randomColorBox"
-                v-for="(item, index) in randomColor"
-                :style="{ backgroundColor: item.color }"
-                @click="selectColorBox(index)"
-                :key="index"
-              >
-                {{ index + 1 }}
+          <el-dialog
+            v-model="dialogVisible_setUp"
+            :before-close="handleClose"
+            title="设置房间"
+            width="50%"
+          >
+            <!-- 设置表单 -->
+            <el-form
+              ref="ruleFormRef"
+              :model="form"
+              :rules="rule"
+              label-width="120px"
+            >
+              <el-form-item label="人数" prop="peopleCount">
+                <el-input
+                  v-model.number.trim="form.peopleCount"
+                  maxlength="3"
+                />
+              </el-form-item>
+              <el-form-item label="队伍数" prop="ranksCount">
+                <el-input v-model.number.trim="form.ranksCount" maxlength="3" />
+              </el-form-item>
+            </el-form>
+            <template #footer>
+              <span class="dialog-footer">
+                <el-button @click="cancel">取消</el-button>
+                <el-button type="primary" @click="confirmed(ruleFormRef)">
+                  确认
+                </el-button>
+              </span>
+            </template>
+          </el-dialog>
+          <el-dialog
+            class="dialog"
+            v-model="dialogVisible_choiceTeam"
+            :before-close="handleClose_choiceTeam"
+            width="30%"
+            style="background-color: #272a37; border-radius: 20px"
+          >
+            <template #header="{ titleId }">
+              <div class="my-header" style="color: #e2dfdfe8">
+                <h4 :id="titleId">选择队伍</h4>
+              </div>
+            </template>
+            <div class="dialog-body" v-if="startGame !== 1">
+              <div ref="colorbox" class="chooseATeamFatherDialogBox">
+                <div
+                  class="subTeam"
+                  v-for="(item, index) in randomColor"
+                  @click="selectColorBox(index)"
+                  :key="index"
+                >
+                  <div
+                    class="randomColorBox"
+                    :style="{ backgroundColor: item.color }"
+                  ></div>
+                  <span> {{ index + 1 }}</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div v-if="startGame !== 1">
-            <div>分队情况</div>
-            <div
-              class="clearfix"
-              v-for="(item, index) in sortedScore"
-              :key="index"
-            >
-              <div
-                class="randomColorBox fl"
-                :style="{ backgroundColor: item.color }"
-              ></div>
-              <div
-                class="fl"
-                v-for="(item_member, index) in item.member"
-                :key="index"
-              >
-                {{ item_member }}
-              </div>
-            </div>
-          </div>
-          <!-- 房间操作 -->
-          <div>
-            <el-icon class="icon" size="30" @click="setUp"><SetUp /></el-icon>
-            <!-- <el-icon class="icon" size="30" @click="setUp"><Setting /></el-icon> -->
-            <el-dialog
-              v-model="dialogVisible_setUp"
-              :before-close="handleClose"
-              title="设置"
-              width="50%"
-            >
-              <!-- 设置表单 -->
-              <el-form
-                ref="ruleFormRef"
-                :model="form"
-                :rules="rule"
-                label-width="120px"
-              >
-                <el-form-item label="人数" prop="peopleCount">
-                  <el-input
-                    v-model.number.trim="form.peopleCount"
-                    maxlength="3"
-                  />
-                </el-form-item>
-                <el-form-item label="队伍数" prop="ranksCount">
-                  <el-input
-                    v-model.number.trim="form.ranksCount"
-                    maxlength="3"
-                  />
-                </el-form-item>
-              </el-form>
-              <template #footer>
-                <span class="dialog-footer">
-                  <el-button @click="cancel">取消</el-button>
-                  <el-button type="primary" @click="confirmed(ruleFormRef)">
-                    确认
-                  </el-button>
+            <template #footer>
+              <span class="dialog-footer">
+                <el-button
+                  type="primary"
+                  @click="dialogVisible_choiceTeam = false"
+                >
+                  确认
+                </el-button>
+              </span>
+            </template>
+          </el-dialog>
+          <div class="left-box">
+            <!-- 操作栏 -->
+            <div class="operatingBar">
+              <!-- 退出房间 -->
+              <div class="operatingItem">
+                <span title="退出房间">
+                  <svg-icon
+                    title="退出房间"
+                    class="icon"
+                    icon-class="out"
+                    @click="out"
+                  ></svg-icon>
                 </span>
-              </template>
-            </el-dialog>
+              </div>
+              <!-- 房间操作 -->
+              <div class="operatingItem">
+                <span title="设置">
+                  <el-icon class="icon" size="30" @click="setUp"
+                    ><SetUp
+                  /></el-icon>
+                </span>
+                <!-- <el-icon class="icon" size="30" @click="setUp"><Setting /></el-icon> -->
+              </div>
+            </div>
+            <!-- 分队信息 -->
+            <div class="teamInformation">
+              <!-- 选择队伍 -->
+              <div
+                title="点击选择队伍"
+                class="theTeamYouChoose"
+                @click="handleOpen_choiceTeam"
+              >
+                <!-- 未选队 -->
+                <div
+                  class="theTeamYouChoose-unsteadyTeam"
+                  v-if="!selectRanksIndex"
+                >
+                  <div class="theTeamYouChoose-title">请选择您的队伍</div>
+                  <svg-icon
+                    class="icon"
+                    style="width: 40px; height: 40px"
+                    icon-class="choose"
+                  ></svg-icon>
+                </div>
+                <!-- 已选队 -->
+                <div
+                  class="theTeamYouChoose-haveSelectedTeams"
+                  v-if="selectRanksIndex"
+                >
+                  <div
+                    class="randomColorBox"
+                    :style="{ backgroundColor: selectRanksColor }"
+                  ></div>
+                  <div style="margin-top: 10px; margin-left: 3px">
+                    第{{ selectRanksIndex }}队
+                  </div>
+                </div>
+              </div>
+              <!-- 分队情况 -->
+              <div class="teamSituation">
+                <div>分队情况</div>
+                <div v-for="(item, index) in sortedScore" :key="index">
+                  <div
+                    class="randomColorBox"
+                    :style="{ backgroundColor: item.color }"
+                  ></div>
+                  <div
+                    class="teamSituation-member"
+                    v-if="false"
+                    v-for="(item_member, index) in item.member"
+                    :key="index"
+                  >
+                    {{ item_member }}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <!-- 退出房间 -->
-          <svg-icon class="icon" icon-class="out" @click="out"></svg-icon>
-          <!-- <el-button type="primary" @click="out">退出房间</el-button> -->
         </el-aside>
         <!-- TODO 中间 -->
         <el-main class="main">
-          <!-- TODO echart 实例 -->
-          <div class="echarts-box"></div>
-          <div id="myEcharts" style="width: 600px; height: 400px"></div>
-          <!-- 排行榜 -->
-          排行榜
-
-          <div v-if="startGame === 1">
-            <el-input v-model="score" placeholder="请输入分数" />
-            <el-button type="primary" @click="scoreConfirmation"
-              >确认</el-button
-            >
+          <div class="main-box">
+            <!-- echart 实例 -->
+            <div
+              id="myEcharts"
+              style="
+                width: 100%;
+                height: 400px;
+                border-radius: 10px;
+                overflow: hidden;
+              "
+            ></div>
+            <!-- 初始显示 -->
+            <div class="initialDisplay" v-if="startGame !== 1">
+              <h4>坚持练习、不断改进策略，才能在游戏中获得胜利。</h4>
+            </div>
+            <!-- 输入分数 -->
+            <div class="inputScore" v-if="startGame === 1">
+              <div
+                class="inputScore-item"
+                v-for="(item, index) in Input_select_score"
+                :key="index"
+                @click="scoreConfirmation(item)"
+              >
+                {{ item }}分
+              </div>
+              <div class="inputScore-item">自定义</div>
+            </div>
           </div>
         </el-main>
         <!-- TODO 右侧边 -->
         <div class="right">
-          <div>
+          <div class="right-box">
             <div>
-              <svg-icon class="iconDisabled" icon-class="people"></svg-icon>
-              <span>房间容量：{{ peopleCount }}人</span>
+              <div>
+                <svg-icon class="iconDisabled" icon-class="people"></svg-icon>
+                <span>房间容量：{{ peopleCount }}</span>
+              </div>
+              <div>
+                <svg-icon
+                  class="iconDisabled"
+                  icon-class="teamcount"
+                ></svg-icon>
+                <span>队伍数量：{{ ranksCount }}</span>
+              </div>
             </div>
             <div>
-              <svg-icon class="iconDisabled" icon-class="teamcount"></svg-icon>
-              <span>队伍数量：{{ ranksCount }}队</span>
-            </div>
-          </div>
-          <div>
-            <p>在线人员:</p>
-            <div v-for="(item, index) in member" :key="index">
-              {{ item }}
+              <p>在线人员:</p>
+              <div v-for="(item, index) in member" :key="index">
+                {{ item }}
+              </div>
             </div>
           </div>
         </div>
@@ -166,6 +261,7 @@ import { fullColorHex } from "../../util/colorConvert";
 import { updateColumnChartEChart } from "../../util/echart";
 // TODO echart
 import * as echarts from "echarts";
+import { markRaw } from "vue";
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
 const sign = store.state.sign;
@@ -174,6 +270,8 @@ const outIN = ref<boolean>(false); // 判断是否执行了退出操作
 const ws = ref<WebSocket | null>(null);
 const randomColor = ref<any>([]);
 const score = ref<string>("");
+const Input_select_score = ref<string[]>(["1", "2", "3", "4", "5"]);
+const dialogVisible_choiceTeam = ref<boolean>(false); // 选择队伍dialog
 const startGame = ref<number>(0); // 是否开始游戏 0：结束 1：开始 2：暂停
 let colorbox = ref<any>(); // 操作dom
 let selectRanksColor = ref<string>("");
@@ -187,7 +285,7 @@ let form = reactive({
 });
 const member = ref<any>([]);
 // 初始化chart
-const chart = ref<any>();
+const chart = ref<echarts.ECharts | null>(null);
 /**
  * 表单校验
  * @param rule
@@ -293,6 +391,11 @@ const createws = () => {
     console.log(e);
   }
 };
+// 选择队伍dialog
+const handleClose_choiceTeam = () => {
+  dialogVisible_choiceTeam.value = false;
+};
+
 /**
  * 推出房间按钮
  */
@@ -312,9 +415,9 @@ const setUp = () => {
 /**
  * 点击确认分数
  */
-const scoreConfirmation = () => {
+const scoreConfirmation = (score: string) => {
   // TODO 点击确认分数
-  if (score.value === "") {
+  if (score === "") {
     ElMessage({
       type: "warning",
       message: "分数不能为空",
@@ -331,11 +434,10 @@ const scoreConfirmation = () => {
   ws.value?.send(
     JSON.stringify({
       type: "addScore",
-      score: Number(score.value),
+      score: Number(score),
       roomId: roomId,
     })
   );
-  score.value = "";
 };
 
 /**
@@ -427,13 +529,17 @@ const cancel = () => {
  */
 const selectColorBox = (index: number) => {
   const mycolorDom: HTMLElement[] = Array.from(colorbox.value.children);
+  console.log(mycolorDom);
   // 其他颜色恢复正常
-  mycolorDom.forEach((item) => {
-    item.style.opacity = "1";
+  mycolorDom.forEach((item: any) => {
+    item.children[0].style.opacity = "1";
+    item.style.backgroundColor = "#100c2a";
   });
   // 选中颜色变浅
-  mycolorDom[index].style.opacity = "0.5";
-  const rgb: string = mycolorDom[index].style.backgroundColor;
+  (mycolorDom[index].children[0] as HTMLElement).style.opacity = "0.5";
+  (mycolorDom[index] as HTMLElement).style.backgroundColor = "#484d5fa0";
+  const rgb: string = (mycolorDom[index].children[0] as HTMLElement).style
+    .backgroundColor;
   selectRanksColor.value = fullColorHex(rgb);
   selectRanksIndex.value = (index + 1).toString();
   ws.value?.send(
@@ -450,6 +556,11 @@ const selectColorBox = (index: number) => {
 const sortedScore = computed(() => {
   return randomColor.value.sort((a: any, b: any) => b.score - a.score);
 });
+
+// 选择队伍dialog
+const handleOpen_choiceTeam = () => {
+  dialogVisible_choiceTeam.value = true;
+};
 
 /**
  * 比赛通知
@@ -491,7 +602,7 @@ onMounted(() => {
   createws();
   const chartElement = document.getElementById("myEcharts");
   if (chartElement instanceof HTMLElement) {
-    chart.value = echarts.init(chartElement, "dark");
+    chart.value = markRaw(echarts.init(chartElement, "dark"));
   }
 });
 onBeforeUnmount(() => {
@@ -503,6 +614,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="less" scoped>
-@import "./index";
 @import "@/assets/less/base.less";
+@import "./index";
 </style>

@@ -1,35 +1,37 @@
-#operatingBox1{
+#operatingBox1 {
   width: 100%;
   height: 100vh;
-  background-image: url('@/assets/image/RoomdetailBg.jpg');
+  background-image: url("@/assets/image/RoomdetailBg.jpg");
   background-size: 100% 100%;
-  padding-top: 4rem;
+  padding-top: 2.5rem;
   box-sizing: border-box;
-  color: #fff;
+  color: #e2dfdfe8;
 }
+
 // icon 图标可操作
-.icon{
+.icon {
   @icon-size: 30px;
   width: @icon-size;
   height: @icon-size;
   cursor: pointer;
-  &:hover{
+
+  &:hover {
     color: #ccc;
   }
 }
 
 // icon 图标不可操作
-.iconDisabled{
+.iconDisabled {
   @icon-size: 20px;
   width: @icon-size;
   height: @icon-size;
   margin-right: 5px;
 }
 
-// 操作框
-#operatingBox{
+// 界面容器
+#operatingBox {
   width: 70%;
-  height: 87vh;
+  height: 90vh;
   background-color: #fff;
   margin: auto;
   border-radius: 15px;
@@ -37,42 +39,287 @@
 }
 
 // 顶部
-.top{
-  background-color: #754d4d;
-  height:90px;
+.top {
+  background-color: #272a37;
+  height: 90px;
   border-radius: 15px 15px 0 0;
   padding: 20px;
-  display: flex;
-  gap:20px;
-  .roomNumber{
+
+  &-box {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+
+    // 放置房间号等信息---左边
+    .roomNumber {
+      width: 300px;
+      // background-color: #fff;
+    }
+
+    // 中间
+    .gameButton {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      height: 50px;
+      box-sizing: border-box;
+      padding: 10px;
+    }
+
+    // 右边
+    .right {
+      width: 250px;
+      // background-color: #fff;
+    }
+
+  }
+
+  .roomNumber {
     font-weight: bold;
   }
 }
+
 // 左侧边
-.left{
+.left {
   width: 200px;
   height: 100%;
   border-radius: 0 0 0 15px;
   background-color: #272a37;
-  padding: 20px;
+  padding: 10px;
+  box-sizing: border-box;
+  position: relative;
+
+  &-box {
+    box-sizing: border-box;
+    display: flex;
+    gap: 10px;
+    height: 100%;
+    position: relative;
+
+    // 操作栏
+    .operatingBar {
+      width: 40px;
+      height: 100%;
+      display: flex;
+      flex-direction: column-reverse;
+
+      .operatingItem {
+        display: flex;
+        gap: 2px;
+      }
+    }
+
+    // 分队信息
+    .teamInformation {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+
+
+      // 选择队伍
+      .theTeamYouChoose {
+        .box(110px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        margin-top: 10px;
+        cursor: pointer;
+
+        &:hover {
+          .boxHover(#484d5fa0)
+        }
+
+        // 未选队
+        &-unsteadyTeam {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+
+        }
+
+        &-title {
+          font-size: 15px;
+        }
+
+        // 已选队
+        &-haveSelectedTeams {
+          .boxDisplayGradient();
+        }
+      }
+
+      // 分队情况
+      .teamSituation {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        .box(250px);
+
+        &-member {
+          width: 100%;
+        }
+      }
+    }
+  }
 }
+
+// 盒子
+.box(@height) {
+  width: 130px;
+  height: @height;
+  background-color: #100c2a;
+  transition: height 1s ease;
+  box-sizing: border-box;
+  border-radius: 10px;
+  padding: 10px;
+  // &:hover {
+  //   height: 200px;
+  // }
+}
+
 // 中间内容区域
-.main{
+.main {
+  @bgc-sbox: #100c2a;
+  width: 100%;
   height: 100%;
-  background-color: #593535;
+  box-sizing: border-box;
+  background-color: #272a37;
   overflow: hidden;
+
+  &-box {
+    box-sizing: border-box;
+    padding: 10px 20px;
+    background-color: #323644;
+    height: 540px;
+  }
+
+  // 初始显示
+  .initialDisplay {
+    @height: 110px;
+    text-align: center;
+    height: @height;
+    font-weight: bold;
+    line-height: @height;
+  }
+
+  // 输入分数
+  .inputScore {
+    margin-top: 10px;
+    width: 100%;
+    height: 110px;
+    // background-color: @bgc-sbox;
+    border-radius: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap; // 超出换行
+    align-items: center;
+    .boxDisplayGradient();
+
+    &-item {
+      @hight: 40px;
+      background-color: #2d2a3c;
+      width: 32%;
+      height: @hight;
+      line-height: 45px;
+      text-align: center;
+      cursor: pointer;
+      border-radius: 5px;
+
+      &:hover {
+        .boxHover(#484d5fa0)
+      }
+    }
+  }
+
 }
+
 // 右侧边
-.right{
-  width: 200px;
+.right {
+  width: 210px;
   box-sizing: border-box;
   border-radius: 0 0 15px 0;
-  padding: 20px;
-  background-color: #686666;
+  padding: 20px 10px;
+  background-color: #272a37;
+
+  &-box {
+    padding: 20px;
+    box-sizing: border-box;
+    background-color: #323644;
+    height: 540px;
+  }
 }
+
 // 组队颜色盒子
-.randomColorBox{
+.randomColorBox {
   width: 50px;
   height: 50px;
+  transition: background-color 0.1s ease;
   border-radius: 50%;
+}
+
+// 盒子显示渐变
+.boxDisplayGradient {
+  animation: fadeIn .5s ease;
+  animation-fill-mode: forwards;
+  opacity: 1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+// 对话框内部样式
+.dialog-body {
+  color: #e2dfdfe8;
+  cursor: pointer;
+}
+
+// 选择队伍对话框子队伍
+.chooseATeamFatherDialogBox {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  .subTeam {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    // 主轴线两边对齐
+    justify-content: space-between;
+    background-color: #100c2a;
+    padding: 10px 20px;
+    border-radius: 10px;
+
+    &:hover {
+      .boxHover(#484d5fa0)
+    }
+  }
+}
+
+// 盒子悬浮
+.boxHover(@bgc) {
+  transition: background-color .1s ease;
+  background-color: @bgc  !important;
 }
