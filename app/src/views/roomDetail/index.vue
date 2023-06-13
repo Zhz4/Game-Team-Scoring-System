@@ -15,20 +15,42 @@
 
           <!-- 开始游戏 -->
           <div class="gameButton">
-            <svg-icon
+            <div
+              v-if="startGame !== 1"
+              class="Sbutton"
               title="开始比赛"
-              class="icon"
-              style="width: 50px; height: 50px"
-              icon-class="startgame"
-            ></svg-icon>
-            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(1)"
-              >开始比赛</el-button
-            > -->
-            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(2)"
-              >暂停比赛</el-button
-            > -->
-            <!-- <el-button color="#626aef" @click="theBeginningAndEndOfTheGame(0)"
-              >结束比赛</el-button> -->
+              @click="theBeginningAndEndOfTheGame(1)"
+            >
+              <svg-icon
+                class="icon"
+                style="width: 50px; height: 50px"
+                icon-class="startgame"
+              ></svg-icon>
+            </div>
+            <div
+              v-if="startGame !== 2 && startGame !== 0"
+              class="Sbutton"
+              title="暂停比赛"
+              @click="theBeginningAndEndOfTheGame(2)"
+            >
+              <svg-icon
+                class="icon"
+                style="width: 50px; height: 50px"
+                icon-class="suspend"
+              ></svg-icon>
+            </div>
+            <div
+              v-if="startGame !== 0"
+              class="Sbutton"
+              title="结束比赛"
+              @click="theBeginningAndEndOfTheGame(0)"
+            >
+              <svg-icon
+                class="icon"
+                style="width: 60px; height: 60px"
+                icon-class="end"
+              ></svg-icon>
+            </div>
           </div>
 
           <!-- 右侧盒子 -->

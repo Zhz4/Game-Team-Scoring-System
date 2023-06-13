@@ -36,6 +36,7 @@
   margin: auto;
   border-radius: 15px;
   overflow: hidden;
+
 }
 
 // 顶部
@@ -64,6 +65,19 @@
       height: 50px;
       box-sizing: border-box;
       padding: 10px;
+
+      .Sbutton {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 90px;
+        height: 60px;
+        border-radius: 10px;
+
+        &:hover {
+          .boxHover(#484d5fa0)
+        }
+      }
     }
 
     // 右边
@@ -203,6 +217,7 @@
     height: @height;
     font-weight: bold;
     line-height: @height;
+    .boxDisplayGradient();
   }
 
   // 输入分数
