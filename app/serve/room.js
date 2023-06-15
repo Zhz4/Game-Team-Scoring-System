@@ -70,7 +70,8 @@ function GroupChart(request) {
             member: rooms.get(roomId).people.map(item => {
                 return {
                     nickname: item.nickname,
-                    userType: item.userType
+                    userType: item.userType,
+                    rank: item.ranks
                 }
             }),
             member_size: rooms.get(roomId).people.length
@@ -139,7 +140,8 @@ function GroupChart(request) {
                 member: rooms.get(roomId).people.map(item => {
                     return {
                         nickname: item.nickname,
-                        userType: item.userType
+                        userType: item.userType,
+                        rank: item.ranks
                     }
                 }),
                 member_size: rooms.get(roomId).people.length
@@ -157,7 +159,8 @@ function GroupChart(request) {
                     member: rooms.get(roomId).people.map(item => {
                         return {
                             nickname: item.nickname,
-                            userType: item.userType
+                            userType: item.userType,
+                            rank: item.ranks
                         }
                     }),
                     TeamSetting: rooms.get(roomId).TeamSetting,
@@ -228,7 +231,8 @@ function GroupChart(request) {
                         member: rooms.get(roomId).people.map(item => {
                             return {
                                 nickname: item.nickname,
-                                userType: item.userType
+                                userType: item.userType,
+                                rank: item.ranks
                             }
                         }),
                         member_size: rooms.get(roomId).people.length

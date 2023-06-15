@@ -259,9 +259,21 @@
             </div>
             <div>
               <p>在线人员:</p>
-              <div v-for="(item, index) in member" :key="index">
-                {{ item }}
-              </div>
+              <el-scrollbar height="380px">
+                <div
+                  style="min-width: 150px; display: flex; align-items: center"
+                  v-for="(item, index) in member"
+                  :key="index"
+                >
+                  <!-- 队伍颜色 -->
+                  <span
+                    class="memberTeamColor"
+                    :style="{ backgroundColor: item.rank }"
+                  ></span>
+                  <!-- 队员昵称 -->
+                  <span>{{ item.nickname }}</span>
+                </div>
+              </el-scrollbar>
             </div>
           </div>
         </div>
@@ -278,7 +290,7 @@ import { Setting, SetUp } from "@element-plus/icons-vue";
 import { useRouter } from "vue-router";
 import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
-import { Team } from "../../interface/setUp";
+import { Team, Member } from "../../interface/setUp";
 import { fullColorHex } from "../../util/colorConvert";
 import { updateColumnChartEChart } from "../../util/echart";
 // TODO echart
@@ -305,7 +317,7 @@ let form = reactive({
   peopleCount: "",
   ranksCount: "",
 });
-const member = ref<any>([]);
+const member = ref<Array<Member>>([]);
 // 初始化chart
 const chart = ref<echarts.ECharts | null>(null);
 /**
@@ -370,8 +382,13 @@ const createws = () => {
         return;
       }
       member.value = data.member.map(
-        (item: { nickname: string }) => item.nickname
+        (item: { nickname: string; rank: string }) => ({
+          nickname: item.nickname,
+          rank: item.rank,
+        })
       );
+      console.log(member.value);
+
       // form = data.TeamSetting
       try {
         peopleCount.value = data.TeamSetting.peopleCount;
@@ -392,6 +409,20 @@ const createws = () => {
     }
     if (data.type === "selectTeam") {
       randomColor.value = data.TeamSetting.ranksColorList;
+      // 处理成员与分队 选择之后成员的队伍绑定
+      data.TeamSetting.ranksColorList.map(
+        (item: { member: Array<string>; color: string }) => {
+          const memberlist = item.member;
+          const color = item.color;
+          memberlist.map((item_member: string) => {
+            member.value.map((item_member2: Member) => {
+              if (item_member2.nickname === item_member) {
+                item_member2.rank = color;
+              }
+            });
+          });
+        }
+      );
     }
     if (data.type === "addScore") {
       randomColor.value = data.TeamSetting.ranksColorList;
@@ -638,4 +669,5 @@ onBeforeUnmount(() => {
 <style lang="less" scoped>
 @import "@/assets/less/base.less";
 @import "./index";
+@import "./media.less";
 </style>
