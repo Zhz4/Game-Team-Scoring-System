@@ -1,5 +1,6 @@
 <template>
   <div id="operatingBox1">
+    <!-- PC端 -->
     <el-container id="operatingBox">
       <!-- TODO 上面 -->
       <el-header class="top">
@@ -63,9 +64,14 @@
           <el-dialog
             v-model="dialogVisible_setUp"
             :before-close="handleClose"
-            title="设置房间"
+            style="background-color: #272a37; border-radius: 20px"
             width="50%"
           >
+            <template #header="{ titleId }">
+              <div class="my-header" style="color: #e2dfdfe8">
+                <h4 :id="titleId">设置房间</h4>
+              </div>
+            </template>
             <!-- 设置表单 -->
             <el-form
               ref="ruleFormRef"
@@ -258,7 +264,7 @@
               </div>
             </div>
             <div>
-              <p>在线人员:</p>
+              <p>在线人员：{{ member.length }}</p>
               <el-scrollbar height="380px">
                 <div
                   style="min-width: 150px; display: flex; align-items: center"
@@ -279,6 +285,7 @@
         </div>
       </el-container>
     </el-container>
+    <!-- 移动端 -->
   </div>
 </template>
 

@@ -1,2 +1,47 @@
 // 媒体查询
-@media screen and (max-width: 768px) {}
+@media screen and (max-width: 1400px) {
+    #operatingBox {
+        // .right {
+        //     display: none;
+        // }
+    }
+
+}
+
+@media screen and (max-width: 810px) {
+    #operatingBox {
+        .teamInformation {
+            display: none !important;
+        }
+
+        .left {
+            width: 40px;
+        }
+
+        .top-box {
+            .roomNumber {
+                width: 400px;
+            }
+        }
+    }
+}
+
+// 变手机移动端
+@media screen and (max-width: 640px) {
+    .left {
+        display: none;
+    }
+
+    #operatingBox1 {
+        padding-top: 0;
+    }
+
+    #operatingBox {
+        width: 100%;
+        height: 100vh;
+
+        .main-box {
+            height: 710px;
+        }
+    }
+}
