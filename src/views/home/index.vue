@@ -8,7 +8,7 @@
     <!-- 聊天框-->
     <div>
       连接的列表
-      <div v-for="item in conns" @click="select(item)">
+      <div v-for="(item, index) in conns" @click="select(item)" :key="index">
         {{ item }}
         <span v-if="token === item">本机</span>
       </div>
@@ -19,7 +19,7 @@
 <script lang="ts">
 import { ElMessage } from "element-plus";
 import { reactive, ref } from "vue";
-import { checkToken } from "@/util/Token";
+import { checkToken } from "../../util/Token";
 
 let token: string;
 // 存储token

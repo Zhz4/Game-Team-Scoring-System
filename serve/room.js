@@ -24,6 +24,8 @@ function GroupChart(request) {
         connection.userType = 0
         rooms.set(roomId, {
             people: [],
+            // 历史记录
+            historicalRecordList: [],
             // 初始默认房间存6人，分三队
             TeamSetting: {
                 peopleCount: 6,
@@ -95,6 +97,8 @@ function GroupChart(request) {
         if (!rooms.has(roomId)) {
             rooms.set(roomId, {
                 people: [],
+                // 历史记录
+                historicalRecordList: [],
                 // 初始默认房间存6人，分三队
                 TeamSetting: {
                     peopleCount: 6,
@@ -317,6 +321,8 @@ function GroupChart(request) {
     function addScore(score, roomId) {
         // 该用户所在的队伍
         const ranks = connection.ranks
+        // 记录并存储历史记录
+        storeHistoricalRecord(roomId, score)
         // 在原来分数的基础上加分
         rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
             if (item.color.toLowerCase() === ranks.toLowerCase()) {
@@ -329,7 +335,8 @@ function GroupChart(request) {
             if (connection !== this) {
                 connection.sendUTF(JSON.stringify({
                     type: 'addScore',
-                    TeamSetting: rooms.get(roomId).TeamSetting
+                    TeamSetting: rooms.get(roomId).TeamSetting,
+                    HistoricalRecord: rooms.get(roomId).historicalRecordList
                 }))
             }
         })
@@ -401,6 +408,32 @@ function GroupChart(request) {
         }
 
 
+    }
+
+    /**
+     * 记录历史记录
+     * @param {房间id} roomId 
+     * @param {用户名} nickname 
+     * @param {分数} score 
+     */
+    function storeHistoricalRecord(roomId, score) {
+        const nickname = connection.nickname
+        // 获取旧的历史记录
+        const historicalRecordList = rooms.get(roomId).historicalRecordList
+        // 获取当前时间
+        const date = new Date()
+        // 时间转换为xx:xx:xx格式
+        const time = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`
+        // 获取当前记录
+        const currentRecord = {
+            nickname: nickname,
+            score: score,
+            time: time
+        }
+        // 将当前记录添加到历史记录中
+        historicalRecordList.push(currentRecord)
+        // 更新历史记录
+        rooms.get(roomId).historicalRecordList = historicalRecordList
     }
 
     /**

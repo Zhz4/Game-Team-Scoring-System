@@ -13,7 +13,6 @@
               {{ roomId }}
             </span>
           </div>
-
           <!-- 开始游戏 -->
           <div class="gameButton">
             <div
@@ -195,10 +194,25 @@
                   </div>
                 </div>
               </div>
-              <!-- 分队情况 -->
-              <div class="teamSituation">
-                <div>分队情况</div>
-                <div v-for="(item, index) in sortedScore" :key="index">
+              <!--TODO  得分情况 -->
+              <div class="score">
+                <div>得分情况</div>
+                <el-scrollbar height="360px" noresize always>
+                  <div
+                    class="score-body"
+                    v-for="(item, index) in HistoricalRecord"
+                    :key="index"
+                  >
+                    <div class="score-body-time">
+                      {{ item.time }}
+                    </div>
+                    <span class="score-body-nickname">
+                      {{ item.nickname }}
+                    </span>
+                    <span class="score-body-score"> +{{ item.score }} </span>
+                  </div>
+                </el-scrollbar>
+                <!-- <div v-for="(item, index) in sortedScore" :key="index">
                   <div
                     class="randomColorBox"
                     :style="{ backgroundColor: item.color }"
@@ -211,7 +225,7 @@
                   >
                     {{ item_member }}
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -265,7 +279,7 @@
             </div>
             <div>
               <p>在线人员：{{ member.length }}</p>
-              <el-scrollbar height="380px">
+              <el-scrollbar height="380px" always>
                 <div
                   style="min-width: 150px; display: flex; align-items: center"
                   v-for="(item, index) in member"
@@ -325,6 +339,7 @@ let form = reactive({
   ranksCount: "",
 });
 const member = ref<Array<Member>>([]);
+const HistoricalRecord = ref<Array<any>>([]); // 历史记录
 // 初始化chart
 const chart = ref<echarts.ECharts | null>(null);
 /**
@@ -433,6 +448,7 @@ const createws = () => {
     }
     if (data.type === "addScore") {
       randomColor.value = data.TeamSetting.ranksColorList;
+      HistoricalRecord.value = data.HistoricalRecord;
       updateColumnChartEChart(chart.value, randomColor.value);
     }
     // TODO 监听到开始/暂停/结束比赛的消息
@@ -666,6 +682,8 @@ onMounted(() => {
   }
 });
 onBeforeUnmount(() => {
+  chart.value?.dispose();
+  chart.value = null;
   if (!outIN.value) {
     // 已经点了按钮就不用再执行退出了，否则就执行
     ws.value?.send(JSON.stringify({ type: "out" }));
