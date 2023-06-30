@@ -55,7 +55,7 @@ npm run serve
 cd Game-Team-Scoring-System
 npm i
 cd serve
-nodemon ./index.js
+nodemon ./top.js
 ```
 
 ### 项目界面

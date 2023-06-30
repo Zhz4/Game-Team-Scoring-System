@@ -60,43 +60,8 @@
       <el-container>
         <!-- TODO 左侧边 -->
         <el-aside class="left">
-          <el-dialog
-            v-model="dialogVisible_setUp"
-            :before-close="handleClose"
-            style="background-color: #272a37; border-radius: 20px"
-            width="50%"
-          >
-            <template #header="{ titleId }">
-              <div class="my-header" style="color: #e2dfdfe8">
-                <h4 :id="titleId">设置房间</h4>
-              </div>
-            </template>
-            <!-- 设置表单 -->
-            <el-form
-              ref="ruleFormRef"
-              :model="form"
-              :rules="rule"
-              label-width="120px"
-            >
-              <el-form-item label="人数" prop="peopleCount">
-                <el-input
-                  v-model.number.trim="form.peopleCount"
-                  maxlength="3"
-                />
-              </el-form-item>
-              <el-form-item label="队伍数" prop="ranksCount">
-                <el-input v-model.number.trim="form.ranksCount" maxlength="3" />
-              </el-form-item>
-            </el-form>
-            <template #footer>
-              <span class="dialog-footer">
-                <el-button @click="cancel">取消</el-button>
-                <el-button type="primary" @click="confirmed(ruleFormRef)">
-                  确认
-                </el-button>
-              </span>
-            </template>
-          </el-dialog>
+          <Dialog :form="form" :rule="rule"></Dialog>
+          <DialogTeam :ws="ws" :roomId="roomId" :id="selectRankId"></DialogTeam>
           <el-dialog
             class="dialog"
             v-model="dialogVisible_choiceTeam"
@@ -114,7 +79,7 @@
                 <div
                   class="subTeam"
                   v-for="(item, index) in randomColor"
-                  @click="selectColorBox(index)"
+                  @click="selectColorBox(index,item)"
                   :key="index"
                 >
                   <div
@@ -158,6 +123,17 @@
                   /></el-icon>
                 </span>
                 <!-- <el-icon class="icon" size="30" @click="setUp"><Setting /></el-icon> -->
+              </div>
+              <!-- 队伍设置 -->
+              <div class="operatingItem">
+                <span title="队伍设置">
+                  <svg-icon
+                      title="队伍设置"
+                      class="icon"
+                      icon-class="teamsetting"
+                      @click="teamsetting_click"
+                  ></svg-icon>
+                </span>
               </div>
             </div>
             <!-- 分队信息 -->
@@ -304,23 +280,25 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, reactive, ref, computed } from "vue";
+import {onBeforeUnmount, onMounted, reactive, ref, computed, provide} from "vue";
 import { useStore } from "vuex";
-// TODO 图标
 import { Setting, SetUp } from "@element-plus/icons-vue";
+import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "vue-router";
 import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
 import { Team, Member } from "../../interface/setUp";
 import { fullColorHex } from "../../util/colorConvert";
 import { updateColumnChartEChart } from "../../util/echart";
-// TODO echart
+import Dialog from './compnent/dialog/index.vue'
+import DialogTeam from './compnent/dialog-teamSetUp/index.vue'
 import * as echarts from "echarts";
 import { markRaw } from "vue";
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
 const sign = store.state.sign;
 const ruleFormRef = ref<FormInstance>();
+provide("ruleFormRef", ruleFormRef);
 const outIN = ref<boolean>(false); // 判断是否执行了退出操作
 const ws = ref<WebSocket | null>(null);
 const randomColor = ref<any>([]);
@@ -331,7 +309,11 @@ const startGame = ref<number>(0); // 是否开始游戏 0：结束 1：开始 2�
 let colorbox = ref<any>(); // 操作dom
 let selectRanksColor = ref<string>("");
 let selectRanksIndex = ref<string>("");
+let selectRankId = ref<string>(""); // 选择的队伍id
+let dialogVisible_setUp_team = ref<boolean>(false);
+provide("dialogVisible_setUp_team", dialogVisible_setUp_team);
 let dialogVisible_setUp = ref<boolean>(false);
+provide("dialogVisible_setUp", dialogVisible_setUp);
 let ranksCount = ref<string>("");
 let peopleCount = ref<string>("");
 let form = reactive({
@@ -342,6 +324,9 @@ const member = ref<Array<Member>>([]);
 const HistoricalRecord = ref<Array<any>>([]); // 历史记录
 // 初始化chart
 const chart = ref<echarts.ECharts | null>(null);
+
+
+
 /**
  * 表单校验
  * @param rule
@@ -366,6 +351,9 @@ const validatePeopleCount = (rule: any, value: string, callback: any) => {
     callback();
   }
 };
+const teamsetting_click = () => {
+  dialogVisible_setUp_team.value = true;
+};
 // 表单校验
 const rule = reactive<FormRules>({
   peopleCount: [
@@ -377,6 +365,38 @@ const rule = reactive<FormRules>({
     { validator: validateRanksCount },
   ],
 });
+/**
+ * 点击确认设置房间
+ */
+const confirmed = async (formEl: FormInstance | undefined) => {
+  console.log(formEl);
+  if (!formEl) return;
+  await formEl.validate((valid, fields) => {
+    if (valid) {
+      const TeamSetting = {
+        peopleCount: form.peopleCount,
+        ranksCount: form.ranksCount,
+        ranksColorList: handleRandomColor(form.ranksCount),
+      };
+      ws.value?.send(
+          JSON.stringify({
+            type: "setUp",
+            TeamSetting: TeamSetting,
+            roomId: roomId,
+          })
+      );
+      selectRanksIndex.value = "";
+      selectRanksColor.value = "";
+      dialogVisible_setUp.value = false;
+    } else {
+      ElMessage({
+        message: `请检查好格式后提交`,
+        type: "error",
+      });
+    }
+  });
+};
+provide('confirmed', confirmed)
 /**
  * websorket初始化
  */
@@ -411,7 +431,7 @@ const createws = () => {
       );
       console.log(member.value);
 
-      // form = data.TeamSetting
+      // dialog = data.TeamSetting
       try {
         peopleCount.value = data.TeamSetting.peopleCount;
         ranksCount.value = data.TeamSetting.ranksCount;
@@ -429,7 +449,7 @@ const createws = () => {
       selectRanksColor.value = "";
       updateColumnChartEChart(chart.value, randomColor.value);
     }
-    if (data.type === "selectTeam") {
+    if (data.type === "selectTeam" || data.type === "changeTeamName") {
       randomColor.value = data.TeamSetting.ranksColorList;
       // 处理成员与分队 选择之后成员的队伍绑定
       data.TeamSetting.ranksColorList.map(
@@ -451,7 +471,6 @@ const createws = () => {
       HistoricalRecord.value = data.HistoricalRecord;
       updateColumnChartEChart(chart.value, randomColor.value);
     }
-    // TODO 监听到开始/暂停/结束比赛的消息
     if (data.type === "theBeginningAndEndOfTheGame") {
       startGame.value = data.Gtype;
       if (data.Gtype === 0) {
@@ -459,6 +478,11 @@ const createws = () => {
         updateColumnChartEChart(chart.value, randomColor.value);
       }
       notification(data.Gtype);
+    }
+    if (data.type === "changeTeamName"){
+      console.log(member.value);
+      // randomColor.value = data.TeamSetting.ranksColorList;
+      selectRanksColor.value = randomColor.value[Number(selectRanksIndex.value)-1].color;
     }
   };
   try {
@@ -527,6 +551,7 @@ const handleRandomColor = (n: string) => {
   for (let i = 0; i < Number(n); i++) {
     let team = <Team>{};
     const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+    team.id = uuidv4();
     team.color = color;
     team.name = color;
     team.member = [];
@@ -534,15 +559,6 @@ const handleRandomColor = (n: string) => {
     teams.push(team);
   }
   return teams;
-};
-
-/**
- * 关闭清空
- */
-const handleClose = () => {
-  // form.ranksCount = "";
-  // form.peopleCount = "";
-  dialogVisible_setUp.value = false;
 };
 /**
  * 监听到了房间的设置信息
@@ -554,7 +570,7 @@ const watchSetUp = (data: {
 }) => {
   peopleCount.value = data.data.peopleCount;
   ranksCount.value = data.data.ranksCount;
-  // Object.assign(form, data.data);
+  // Object.assign(dialog, data.data);
 
   ElMessage({
     message: `${data.nickname}修改了房间设置`,
@@ -562,48 +578,15 @@ const watchSetUp = (data: {
   });
 };
 
-/**
- * 点击确认设置房间
- */
-const confirmed = async (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  await formEl.validate((valid, fields) => {
-    if (valid) {
-      const TeamSetting = {
-        peopleCount: form.peopleCount,
-        ranksCount: form.ranksCount,
-        ranksColorList: handleRandomColor(form.ranksCount),
-      };
-      ws.value?.send(
-        JSON.stringify({
-          type: "setUp",
-          TeamSetting: TeamSetting,
-          roomId: roomId,
-        })
-      );
-      selectRanksIndex.value = "";
-      selectRanksColor.value = "";
-      dialogVisible_setUp.value = false;
-    } else {
-      ElMessage({
-        message: `请检查好格式后提交`,
-        type: "error",
-      });
-    }
-  });
-};
+
+
 
 /**
- * 取消设置房间
- */
-const cancel = () => {
-  dialogVisible_setUp.value = false;
-};
-/**
- * 选中按钮样式
+ * TODO 选中按钮样式
  * @param index
+ * @param item
  */
-const selectColorBox = (index: number) => {
+const selectColorBox = (index: number,item:{id:string}) => {
   const mycolorDom: HTMLElement[] = Array.from(colorbox.value.children);
   console.log(mycolorDom);
   // 其他颜色恢复正常
@@ -618,9 +601,11 @@ const selectColorBox = (index: number) => {
     .backgroundColor;
   selectRanksColor.value = fullColorHex(rgb);
   selectRanksIndex.value = (index + 1).toString();
+  selectRankId.value = item.id;
   ws.value?.send(
     JSON.stringify({
       type: "selectTeam",
+      id:item.id,
       color: selectRanksColor.value,
       roomId: roomId,
     })
@@ -639,7 +624,7 @@ const handleOpen_choiceTeam = () => {
 };
 
 /**
- * 比赛通知
+ * TODO 比赛通知
  * @param Gtype 通知类型 1：开始比赛 2：暂停比赛 3：结束比赛
  */
 const notification = (Gtype: number) => {
@@ -651,10 +636,9 @@ const notification = (Gtype: number) => {
 };
 
 /**
- * 开始/暂停/结束比赛并发送给后端
+ * TODO 开始/暂停/结束比赛并发送给后端
  */
 const theBeginningAndEndOfTheGame = (Gtype: number) => {
-  // TODO 开始/暂停/结束比赛按钮
   // 判断是否选择了队伍
   if (selectRanksIndex.value === "" && selectRanksColor.value === "") {
     ElMessage({
