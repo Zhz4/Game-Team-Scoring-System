@@ -2,6 +2,7 @@
 node_modules
 /dist
 bug.md
+test
 
 
 # local env files

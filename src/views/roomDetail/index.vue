@@ -14,7 +14,7 @@
             </span>
           </div>
           <!-- 开始游戏 -->
-          <div class="gameButton">
+          <div class="gameButton" @click="test">
             <div
               v-if="startGame !== 1"
               class="Sbutton"
@@ -86,7 +86,7 @@
                     class="randomColorBox"
                     :style="{ backgroundColor: item.color }"
                   ></div>
-                  <span> {{ index + 1 }}</span>
+                  <span> {{ item.name }}</span>
                 </div>
               </div>
             </div>
@@ -171,38 +171,7 @@
                 </div>
               </div>
               <!--TODO  得分情况 -->
-              <div class="score">
-                <div>得分情况</div>
-                <el-scrollbar height="360px" noresize always>
-                  <div
-                    class="score-body"
-                    v-for="(item, index) in HistoricalRecord"
-                    :key="index"
-                  >
-                    <div class="score-body-time">
-                      {{ item.time }}
-                    </div>
-                    <span class="score-body-nickname">
-                      {{ item.nickname }}
-                    </span>
-                    <span class="score-body-score"> +{{ item.score }} </span>
-                  </div>
-                </el-scrollbar>
-                <!-- <div v-for="(item, index) in sortedScore" :key="index">
-                  <div
-                    class="randomColorBox"
-                    :style="{ backgroundColor: item.color }"
-                  ></div>
-                  <div
-                    class="teamSituation-member"
-                    v-if="false"
-                    v-for="(item_member, index) in item.member"
-                    :key="index"
-                  >
-                    {{ item_member }}
-                  </div>
-                </div> -->
-              </div>
+              <scoreCompnent :HistoricalRecord="HistoricalRecord"></scoreCompnent>
             </div>
           </div>
         </el-aside>
@@ -288,10 +257,11 @@ import { useRouter } from "vue-router";
 import router from "../../router";
 import { ElMessage, FormInstance, FormRules } from "element-plus";
 import { Team, Member } from "../../interface/setUp";
-import { fullColorHex } from "../../util/colorConvert";
+import { fullColorHex,generateRandomTeams } from "../../util/colorConvert";
 import { updateColumnChartEChart } from "../../util/echart";
-import Dialog from './compnent/dialog/index.vue'
-import DialogTeam from './compnent/dialog-teamSetUp/index.vue'
+import Dialog from './compnent/aside-left/dialog/index.vue'
+import DialogTeam from './compnent/aside-left/dialog-teamSetUp/index.vue'
+import scoreCompnent from './compnent/aside-left/score/index.vue'
 import * as echarts from "echarts";
 import { markRaw } from "vue";
 const store = useStore();
@@ -326,6 +296,9 @@ const HistoricalRecord = ref<Array<any>>([]); // 历史记录
 const chart = ref<echarts.ECharts | null>(null);
 
 
+const test=()=>{
+  console.log('test')
+}
 
 /**
  * 表单校验
@@ -336,7 +309,10 @@ const chart = ref<echarts.ECharts | null>(null);
 const validateRanksCount = (rule: any, value: any, callback: any) => {
   if (Number(value) > Number(form.peopleCount)) {
     callback(new Error("队伍数不能大于人数"));
-  } else if (value === "") {
+  }else if(Number(value)>20){
+    callback(new Error("队伍数不能大于20"));
+  }
+  else if (value === "") {
     callback(new Error("队伍数不能为空"));
   } else {
     callback();
@@ -475,6 +451,7 @@ const createws = () => {
       startGame.value = data.Gtype;
       if (data.Gtype === 0) {
         randomColor.value = data.TeamSetting.ranksColorList;
+        HistoricalRecord.value = data.HistoricalRecord;
         updateColumnChartEChart(chart.value, randomColor.value);
       }
       notification(data.Gtype);
@@ -548,12 +525,13 @@ const handleRandomColor = (n: string) => {
   // TODO 生成随机颜色标记
   if (n == "") return;
   const teams: Array<object> = [];
+  const name = generateRandomTeams(Number(n))
   for (let i = 0; i < Number(n); i++) {
     let team = <Team>{};
     const color = "#" + Math.floor(Math.random() * 16777215).toString(16);
     team.id = uuidv4();
     team.color = color;
-    team.name = color;
+    team.name = name[i];
     team.member = [];
     team.score = 0;
     teams.push(team);

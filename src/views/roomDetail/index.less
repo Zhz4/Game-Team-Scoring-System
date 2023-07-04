@@ -48,7 +48,9 @@
   margin: auto;
   border-radius: 15px;
   overflow: hidden;
-
+  animation: fadeIn .3s ease;
+  animation-fill-mode: forwards;
+  opacity: 1;
 }
 
 // 顶部
@@ -128,6 +130,7 @@
       height: 100%;
       display: flex;
       flex-direction: column-reverse;
+      gap: 15px;
 
       .operatingItem {
         display: flex;
@@ -173,41 +176,6 @@
         // 已选队
         &-haveSelectedTeams {
           .boxDisplayGradient();
-        }
-      }
-
-      // 分队情况
-      .score {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        .box(420px);
-        overflow: hidden;
-        // 毛玻璃
-        backdrop-filter: blur(100px);
-
-        &-body {
-          font-size: 10px;
-          margin-top: 10px;
-
-          &:first-child {
-            margin-top: 0;
-          }
-
-          &-time {
-            font-size: 10px;
-          }
-
-          &-score {
-            font-size: 16px;
-            color: #169c39;
-            font-weight: bold;
-          }
-        }
-
-        &-member {
-          width: 100%;
         }
       }
     }

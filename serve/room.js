@@ -31,23 +31,22 @@ function GroupChart(request) {
             TeamSetting: {
                 peopleCount: 6,
                 ranksCount: 3,
-                // '#FF0000', '#00FF00', '#0000FF'
                 ranksColorList: [{
                     id: uuidv4(),
-                    name: '#FF0000',
-                    color: '#FF0000',
+                    name: '苹果队',
+                    color: 'rgba(30, 144, 255, 1)',
                     score: 0,
                     member: []
                 }, {
                     id: uuidv4(),
-                    name: '#00FF00',
-                    color: '#00FF00',
+                    name: '香蕉队',
+                    color: 'rgba(199, 21, 133, 1)',
                     score: 0,
                     member: []
                 }, {
                     id: uuidv4(),
-                    name: '#0000FF',
-                    color: '#0000FF',
+                    name: '橘子队',
+                    color: 'rgba(255, 120, 0, 1)',
                     score: 0,
                     member: []
                 }]
@@ -107,22 +106,23 @@ function GroupChart(request) {
                 TeamSetting: {
                     peopleCount: 6,
                     ranksCount: 3,
+                    // '#FF0000', '#00FF00', '#0000FF'
                     ranksColorList: [{
                         id: uuidv4(),
-                        name: '#FF0000',
-                        color: '#FF0000',
+                        name: '苹果队',
+                        color: 'rgba(30, 144, 255, 1)',
                         score: 0,
                         member: []
                     }, {
                         id: uuidv4(),
-                        name: '#00FF00',
-                        color: '#00FF00',
+                        name: '香蕉队',
+                        color: 'rgba(199, 21, 133, 1)',
                         score: 0,
                         member: []
                     }, {
                         id: uuidv4(),
-                        name: '#0000FF',
-                        color: '#0000FF',
+                        name: '橘子队',
+                        color: 'rgba(255, 120, 0, 1)',
                         score: 0,
                         member: []
                     }]
@@ -280,7 +280,6 @@ function GroupChart(request) {
         // 设置房间号，设置人数
         const room = rooms.get(roomId)
         room.TeamSetting = TeamSetting
-        // console.log(TeamSetting);
         // 发送通知
         room.people.forEach(function (connection) {
             if (connection !== this) {
@@ -403,13 +402,15 @@ function GroupChart(request) {
             rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
                 item.score = 0
             })
+            rooms.get(roomId).historicalRecordList = []
             rooms.get(roomId).people.forEach(function (connection) {
                 if (connection !== this) {
                     connection.sendUTF(JSON.stringify({
                         type: 'theBeginningAndEndOfTheGame',
                         msg: typeArray[Gtype],
                         Gtype: Gtype,
-                        TeamSetting: rooms.get(roomId).TeamSetting
+                        TeamSetting: rooms.get(roomId).TeamSetting,
+                        historicalRecordList:rooms.get(roomId).historicalRecordList
                     }))
                 }
             })
@@ -452,6 +453,12 @@ function GroupChart(request) {
      */
     function storeHistoricalRecord(roomId, score) {
         const nickname = connection.nickname
+        // 队伍id
+        const ranks = connection.ranks
+        // 队伍颜色
+        const color = rooms.get(roomId).TeamSetting.ranksColorList.filter(item => item.id === ranks)[0].color
+        // 获取队伍名称
+        const ranksName = rooms.get(roomId).TeamSetting.ranksColorList.filter(item => item.id === ranks)[0].name
         // 获取旧的历史记录
         const historicalRecordList = rooms.get(roomId).historicalRecordList
         // 获取当前时间
@@ -462,7 +469,9 @@ function GroupChart(request) {
         const currentRecord = {
             nickname: nickname,
             score: score,
-            time: time
+            time: time,
+            color:color,
+            ranksName:ranksName
         }
         // 将当前记录添加到历史记录中
         historicalRecordList.push(currentRecord)

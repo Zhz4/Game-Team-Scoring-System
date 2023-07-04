@@ -1,0 +1,73 @@
+// 分队情况
+.score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  .box(420px);
+  overflow: hidden;
+  // 毛玻璃
+  backdrop-filter: blur(100px);
+
+  &-body {
+    font-size: 10px;
+    margin-top: 10px;
+    &:hover{
+      .score-body-time{
+        display:inline-block;
+      }
+    }
+    animation: slide-up 0.5s ease;
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &-time {
+      margin-left: 24px;
+      font-size: 10px;
+      animation: slide-up 0.5s ease;
+      transform:scale(0.8);
+      display:none;
+    }
+    &-rankName{
+      display:inline-block;
+      font-weight:bold;
+      padding: 2px;
+      //color: #1A1A1A;
+      border-radius: 4px;
+    }
+    &-score {
+      font-size: 16px;
+      color: #169c39;
+      font-weight: bold;
+    }
+  }
+
+  &-member {
+    width: 100%;
+  }
+}
+// 盒子
+.box(@height) {
+  width: 130px;
+  height: @height;
+  background-color: #100c2a;
+  transition: height 1s ease;
+  box-sizing: border-box;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+@keyframes slide-up {
+  0%{
+    opacity: 0.5;
+    color: #923dbd;
+  }
+  100%{
+    opacity: 1;
+    color: #e2dfdfe8;
+  }
+}
+.emoji{
+  font-size: 18px;
+}

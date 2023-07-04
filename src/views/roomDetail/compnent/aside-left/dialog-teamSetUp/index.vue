@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import {inject, reactive, ref, Ref} from "vue";
 import store from "@/store";
+import {FormRules} from "element-plus";
 const ws = store.state.websocket;
 // 预设集中颜色
 const predefineColors = ref([
@@ -43,18 +44,38 @@ const cancel = ()=>{
 }
 
 const confirmed = () => {
-  console.log('dd')
   ws?.send(
-    JSON.stringify({
-      type: "changeTeamSetUp",
-      roomId: props.roomId,
-      id: props.id,
-      name: form.name,
-      color: form.color,
-    })
+      JSON.stringify({
+        type: "changeTeamSetUp",
+        roomId: props.roomId,
+        id: props.id,
+        name: form.name,
+        color: form.color,
+      })
   );
   dialogVisible_setUp_team.value = false
 }
+/**
+ * 队伍名校验
+ * @param rule
+ * @param value
+ * @param callback
+ */
+const validateranksName = (rule: any, value: string, callback: any) => {
+  if(value.length > 3) {
+    callback(new Error('队伍名不能超过3个字符'));
+  } else {
+    callback();
+  }
+};
+// 表单校验
+const rule = reactive<FormRules>({
+  name: [
+    { validator: validateranksName },
+  ],
+});
+
+
 </script>
 
 <template>
@@ -70,12 +91,13 @@ const confirmed = () => {
       </div>
     </template>
     <el-form
+        :rules="rule"
         :model="form"
         label-width="120px">
-      <el-form-item label="队伍名" prop="ranksCount">
-        <el-input v-model="form.name"  maxlength="3" />
+      <el-form-item label="队伍名" prop="name" >
+        <el-input v-model="form.name" maxlength="3"/>
       </el-form-item>
-      <el-form-item label="队伍颜色" prop="ranksCount">
+      <el-form-item label="队伍颜色" prop="color">
         <div class="demo-color-block">
           <el-color-picker v-model="form.color" show-alpha :predefine="predefineColors" />
         </div>
