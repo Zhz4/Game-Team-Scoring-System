@@ -52,7 +52,6 @@
               ></svg-icon>
             </div>
           </div>
-
           <!-- 右侧盒子 -->
           <div class="right"></div>
         </div>
@@ -62,45 +61,7 @@
         <el-aside class="left">
           <Dialog :form="form" :rule="rule"></Dialog>
           <DialogTeam :ws="ws" :roomId="roomId" :id="selectRankId"></DialogTeam>
-          <el-dialog
-            class="dialog"
-            v-model="dialogVisible_choiceTeam"
-            :before-close="handleClose_choiceTeam"
-            width="30%"
-            style="background-color: #272a37; border-radius: 20px"
-          >
-            <template #header="{ titleId }">
-              <div class="my-header" style="color: #e2dfdfe8">
-                <h4 :id="titleId">选择队伍</h4>
-              </div>
-            </template>
-            <div class="dialog-body" v-if="startGame !== 1">
-              <div ref="colorbox" class="chooseATeamFatherDialogBox">
-                <div
-                  class="subTeam"
-                  v-for="(item, index) in randomColor"
-                  @click="selectColorBox(index,item)"
-                  :key="index"
-                >
-                  <div
-                    class="randomColorBox"
-                    :style="{ backgroundColor: item.color }"
-                  ></div>
-                  <span> {{ item.name }}</span>
-                </div>
-              </div>
-            </div>
-            <template #footer>
-              <span class="dialog-footer">
-                <el-button
-                  type="primary"
-                  @click="dialogVisible_choiceTeam = false"
-                >
-                  确认
-                </el-button>
-              </span>
-            </template>
-          </el-dialog>
+          <ChooseTeam :randomColor="randomColor" :roomId="roomId"></ChooseTeam>
           <div class="left-box">
             <!-- 操作栏 -->
             <div class="operatingBar">
@@ -166,7 +127,7 @@
                     :style="{ backgroundColor: selectRanksColor }"
                   ></div>
                   <div style="margin-top: 10px; margin-left: 3px">
-                    第{{ selectRanksIndex }}队
+                    {{ selectRanksName }}
                   </div>
                 </div>
               </div>
@@ -261,6 +222,7 @@ import { fullColorHex,generateRandomTeams } from "../../util/colorConvert";
 import { updateColumnChartEChart } from "../../util/echart";
 import Dialog from './compnent/aside-left/dialog/index.vue'
 import DialogTeam from './compnent/aside-left/dialog-teamSetUp/index.vue'
+import ChooseTeam from './compnent/aside-left/dialog-chooseTeam/index.vue'
 import scoreCompnent from './compnent/aside-left/score/index.vue'
 import * as echarts from "echarts";
 import { markRaw } from "vue";
@@ -275,11 +237,17 @@ const randomColor = ref<any>([]);
 const score = ref<string>("");
 const Input_select_score = ref<string[]>(["1", "2", "3", "4", "5"]);
 const dialogVisible_choiceTeam = ref<boolean>(false); // 选择队伍dialog
+provide("dialogVisible_choiceTeam", dialogVisible_choiceTeam);
 const startGame = ref<number>(0); // 是否开始游戏 0：结束 1：开始 2：暂停
-let colorbox = ref<any>(); // 操作dom
+provide("startGame", startGame);
+let selectRanksName = ref<string>("");
+provide("selectRanksName", selectRanksName);
 let selectRanksColor = ref<string>("");
+provide("selectRanksColor", selectRanksColor);
 let selectRanksIndex = ref<string>("");
+provide("selectRanksIndex", selectRanksIndex);
 let selectRankId = ref<string>(""); // 选择的队伍id
+provide("selectRankId", selectRankId);
 let dialogVisible_setUp_team = ref<boolean>(false);
 provide("dialogVisible_setUp_team", dialogVisible_setUp_team);
 let dialogVisible_setUp = ref<boolean>(false);
@@ -294,11 +262,6 @@ const member = ref<Array<Member>>([]);
 const HistoricalRecord = ref<Array<any>>([]); // 历史记录
 // 初始化chart
 const chart = ref<echarts.ECharts | null>(null);
-
-
-const test=()=>{
-  console.log('test')
-}
 
 /**
  * 表单校验
@@ -468,10 +431,7 @@ const createws = () => {
     console.log(e);
   }
 };
-// 选择队伍dialog
-const handleClose_choiceTeam = () => {
-  dialogVisible_choiceTeam.value = false;
-};
+
 
 /**
  * 推出房间按钮
@@ -556,39 +516,6 @@ const watchSetUp = (data: {
   });
 };
 
-
-
-
-/**
- * TODO 选中按钮样式
- * @param index
- * @param item
- */
-const selectColorBox = (index: number,item:{id:string}) => {
-  const mycolorDom: HTMLElement[] = Array.from(colorbox.value.children);
-  console.log(mycolorDom);
-  // 其他颜色恢复正常
-  mycolorDom.forEach((item: any) => {
-    item.children[0].style.opacity = "1";
-    item.style.backgroundColor = "#100c2a";
-  });
-  // 选中颜色变浅
-  (mycolorDom[index].children[0] as HTMLElement).style.opacity = "0.5";
-  (mycolorDom[index] as HTMLElement).style.backgroundColor = "#484d5fa0";
-  const rgb: string = (mycolorDom[index].children[0] as HTMLElement).style
-    .backgroundColor;
-  selectRanksColor.value = fullColorHex(rgb);
-  selectRanksIndex.value = (index + 1).toString();
-  selectRankId.value = item.id;
-  ws.value?.send(
-    JSON.stringify({
-      type: "selectTeam",
-      id:item.id,
-      color: selectRanksColor.value,
-      roomId: roomId,
-    })
-  );
-};
 /**
  * 排行榜按照分数排序
  */
