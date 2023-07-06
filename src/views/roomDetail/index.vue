@@ -53,7 +53,10 @@
             </div>
           </div>
           <!-- 右侧盒子 -->
-          <div class="right"></div>
+          <div class="right">
+          <!-- 计时  -->
+            <SetInterval :startGame="startGame"></SetInterval>
+          </div>
         </div>
       </el-header>
       <el-container>
@@ -237,9 +240,10 @@ import DialogTeam from './compnent/aside-left/dialog-teamSetUp/index.vue'
 import ChooseTeam from './compnent/aside-left/dialog-chooseTeam/index.vue'
 import scoreCompnent from './compnent/aside-left/score/index.vue'
 import UserInfo from './compnent/aside-left/dialog-userinfo/index.vue'
+import SetInterval from './compnent/top/setInterval/index.vue'
 import * as echarts from "echarts";
 import { markRaw } from "vue";
-import {setUsername} from "@/util/Token";
+import {getToken, setUsername} from "@/util/Token";
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
 const sign = store.state.sign;
@@ -452,11 +456,14 @@ const createws = () => {
           username: item.username,
           rank: item.rank,
         }));
-      setUsername(data.username);
-      ElMessage({
-        type: "success",
-        message: "修改成功",
-      });
+      console.log(data.nickname,getToken());
+      if(data.nickname === getToken()){
+        setUsername(data.username);
+        ElMessage({
+          type: "success",
+          message: "修改成功",
+        });
+      }
     }
   };
   try {
@@ -616,5 +623,5 @@ onBeforeUnmount(() => {
 <style lang="less" scoped>
 @import "@/assets/less/base.less";
 @import "./index";
-@import "./media.less";
+//@import "./media.less";
 </style>

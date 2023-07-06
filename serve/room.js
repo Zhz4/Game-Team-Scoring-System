@@ -201,6 +201,7 @@ function GroupChart(request) {
      * TODO 修改用户昵称
      */
     function modifyTheUserSNickname(newUsername) {
+        const nickname = connection.nickname
         connection.username = newUsername
         const roomId = connection.room
         rooms.get(roomId).people.forEach(function (connection) {
@@ -208,6 +209,7 @@ function GroupChart(request) {
             if (connection !== this) {
                 connection.sendUTF(JSON.stringify({
                     type: "modifyNickname",
+                    nickname: nickname,
                     username: newUsername,
                     member: rooms.get(roomId).people.map(item => {
                         return {
