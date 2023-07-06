@@ -14,7 +14,7 @@
             </span>
           </div>
           <!-- 开始游戏 -->
-          <div class="gameButton" @click="test">
+          <div class="gameButton">
             <div
               v-if="startGame !== 1"
               class="Sbutton"
@@ -60,8 +60,9 @@
         <!-- TODO 左侧边 -->
         <el-aside class="left">
           <Dialog :form="form" :rule="rule"></Dialog>
-          <DialogTeam :ws="ws" :roomId="roomId" :id="selectRankId"></DialogTeam>
+          <DialogTeam :roomId="roomId" :id="selectRankId" :selectRanksName="selectRanksName"></DialogTeam>
           <ChooseTeam :randomColor="randomColor" :roomId="roomId"></ChooseTeam>
+          <UserInfo></UserInfo>
           <div class="left-box">
             <!-- 操作栏 -->
             <div class="operatingBar">
@@ -93,6 +94,17 @@
                       class="icon"
                       icon-class="teamsetting"
                       @click="teamsetting_click"
+                  ></svg-icon>
+                </span>
+              </div>
+              <!-- 个人设置 -->
+              <div class="operatingItem">
+                <span title="个人设置">
+                  <svg-icon
+                      title="个人设置"
+                      class="icon"
+                      icon-class="userinfo"
+                      @click="userinfo_click"
                   ></svg-icon>
                 </span>
               </div>
@@ -197,7 +209,7 @@
                     :style="{ backgroundColor: item.rank }"
                   ></span>
                   <!-- 队员昵称 -->
-                  <span>{{ item.nickname }}</span>
+                  <span>{{ item.username }}</span>
                 </div>
               </el-scrollbar>
             </div>
@@ -224,8 +236,10 @@ import Dialog from './compnent/aside-left/dialog/index.vue'
 import DialogTeam from './compnent/aside-left/dialog-teamSetUp/index.vue'
 import ChooseTeam from './compnent/aside-left/dialog-chooseTeam/index.vue'
 import scoreCompnent from './compnent/aside-left/score/index.vue'
+import UserInfo from './compnent/aside-left/dialog-userinfo/index.vue'
 import * as echarts from "echarts";
 import { markRaw } from "vue";
+import {setUsername} from "@/util/Token";
 const store = useStore();
 const roomId = router.currentRoute.value.params.roomId;
 const sign = store.state.sign;
@@ -236,6 +250,8 @@ const ws = ref<WebSocket | null>(null);
 const randomColor = ref<any>([]);
 const score = ref<string>("");
 const Input_select_score = ref<string[]>(["1", "2", "3", "4", "5"]);
+const dialogVisible_userinfo = ref<boolean>(false); // 个人信息dialog
+provide("dialogVisible_userinfo", dialogVisible_userinfo);
 const dialogVisible_choiceTeam = ref<boolean>(false); // 选择队伍dialog
 provide("dialogVisible_choiceTeam", dialogVisible_choiceTeam);
 const startGame = ref<number>(0); // 是否开始游戏 0：结束 1：开始 2：暂停
@@ -290,6 +306,11 @@ const validatePeopleCount = (rule: any, value: string, callback: any) => {
     callback();
   }
 };
+
+const userinfo_click = () => {
+  dialogVisible_userinfo.value = true;
+};
+
 const teamsetting_click = () => {
   dialogVisible_setUp_team.value = true;
 };
@@ -363,8 +384,9 @@ const createws = () => {
         return;
       }
       member.value = data.member.map(
-        (item: { nickname: string; rank: string }) => ({
+        (item: { nickname: string; rank: string;username:string }) => ({
           nickname: item.nickname,
+          username: item.username,
           rank: item.rank,
         })
       );
@@ -421,8 +443,20 @@ const createws = () => {
     }
     if (data.type === "changeTeamName"){
       console.log(member.value);
-      // randomColor.value = data.TeamSetting.ranksColorList;
       selectRanksColor.value = randomColor.value[Number(selectRanksIndex.value)-1].color;
+    }
+    if (data.type === "modifyNickname"){
+      member.value = data.member.map(
+        (item: { nickname: string; rank: string;username:string }) => ({
+          nickname: item.nickname,
+          username: item.username,
+          rank: item.rank,
+        }));
+      setUsername(data.username);
+      ElMessage({
+        type: "success",
+        message: "修改成功",
+      });
     }
   };
   try {
@@ -562,7 +596,6 @@ const theBeginningAndEndOfTheGame = (Gtype: number) => {
     })
   );
 };
-// document.getElementsByTagName("body")[0].className = "add_bg_roomDetail";
 onMounted(() => {
   createws();
   const chartElement = document.getElementById("myEcharts");

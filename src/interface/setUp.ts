@@ -8,5 +8,6 @@ export interface Team {
 
 export interface Member {
   nickname: string;
+  username: string;
   rank: string;
 }

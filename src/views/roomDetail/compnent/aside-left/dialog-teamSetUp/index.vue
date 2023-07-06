@@ -29,9 +29,11 @@ const props = defineProps({
     type: String,
   },
 });
+let selectRanksName = inject('selectRanksName') as Ref<string>
+let selectRanksColor = inject('selectRanksColor') as Ref<string>
 const form = reactive({
-  name: '',
-  color: '#409EFF',
+  name: selectRanksName,
+  color: selectRanksColor,
 })
 let dialogVisible_setUp_team =  inject('dialogVisible_setUp_team') as Ref<boolean>
 
@@ -74,10 +76,7 @@ const rule = reactive<FormRules>({
     { validator: validateranksName },
   ],
 });
-
-
 </script>
-
 <template>
   <el-dialog
       v-model="dialogVisible_setUp_team"
@@ -113,8 +112,6 @@ const rule = reactive<FormRules>({
     </template>
   </el-dialog>
 </template>
-
-
 <style lang="less">
 
 </style>

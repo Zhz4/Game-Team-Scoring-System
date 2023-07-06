@@ -1,5 +1,7 @@
 const url = require('url');
-const { v4: uuidv4 } = require('uuid');
+const {
+    v4: uuidv4
+} = require('uuid');
 // 存储所有房间的用户连接
 let rooms = new Map();
 
@@ -10,9 +12,11 @@ function GroupChart(request) {
         pathname,
         search
     } = url.parse(request.httpRequest.url);
+    let nickname = search.split('=')[1].split('&')[0]
+    let username = decodeURIComponent(search.split('=')[2])
     // 将连接对象保存到列表中
-    let nickname = search.split('=')[1]
-    connection.nickname = nickname
+    connection.nickname = nickname // 用户id
+    connection.username = username // 用户名
 
     /**
      * 处理创建新房间事件
@@ -75,6 +79,7 @@ function GroupChart(request) {
             member: rooms.get(roomId).people.map(item => {
                 return {
                     nickname: item.nickname,
+                    username: item.username,
                     userType: item.userType,
                     rank: item.ranks
                 }
@@ -88,7 +93,6 @@ function GroupChart(request) {
      * @param data
      */
     function handleJoinRoom(data) {
-        // TODO 加入房间
         const {
             roomId
         } = data;
@@ -151,6 +155,7 @@ function GroupChart(request) {
                 member: rooms.get(roomId).people.map(item => {
                     return {
                         nickname: item.nickname,
+                        username: item.username,
                         userType: item.userType,
                         rank: item.ranks
                     }
@@ -170,6 +175,7 @@ function GroupChart(request) {
                     member: rooms.get(roomId).people.map(item => {
                         return {
                             nickname: item.nickname,
+                            username: item.username,
                             userType: item.userType,
                             rank: item.ranks
                         }
@@ -191,7 +197,29 @@ function GroupChart(request) {
         return currentNumberOfPeople >= numberOfRoomsSet;
     }
 
-
+    /**
+     * TODO 修改用户昵称
+     */
+    function modifyTheUserSNickname(newUsername) {
+        connection.username = newUsername
+        const roomId = connection.room
+        rooms.get(roomId).people.forEach(function (connection) {
+            // 忽略发送消息的客户端，避免消息被重复发送
+            if (connection !== this) {
+                connection.sendUTF(JSON.stringify({
+                    type: "modifyNickname",
+                    username: newUsername,
+                    member: rooms.get(roomId).people.map(item => {
+                        return {
+                            nickname: item.nickname,
+                            rank: item.ranks,
+                            username: item.username,
+                        }
+                    }),
+                }));
+            }
+        })
+    }
     /**
      * TODO 清空用户的组队信息
      * @param {房间Id} roomId
@@ -242,6 +270,7 @@ function GroupChart(request) {
                         member: rooms.get(roomId).people.map(item => {
                             return {
                                 nickname: item.nickname,
+                                username:item.username,
                                 userType: item.userType,
                                 rank: item.ranks
                             }
@@ -286,6 +315,7 @@ function GroupChart(request) {
                 connection.sendUTF(JSON.stringify({
                     type: 'setUp',
                     nickname: connection.nickname,
+                    username: connection.username,
                     data: room.TeamSetting,
                     msg: '设置好了新的房间信息'
                 }))
@@ -299,7 +329,7 @@ function GroupChart(request) {
      * @param id 队伍id
      * @param roomId 房间Id
      */
-    function selectTeam(color,id, roomId) {
+    function selectTeam(color, id, roomId) {
         const nickname = connection.nickname;
         clearUserSTeamingInformation(roomId)
         rooms.get(roomId).TeamSetting.ranksColorList
@@ -410,7 +440,7 @@ function GroupChart(request) {
                         msg: typeArray[Gtype],
                         Gtype: Gtype,
                         TeamSetting: rooms.get(roomId).TeamSetting,
-                        historicalRecordList:rooms.get(roomId).historicalRecordList
+                        historicalRecordList: rooms.get(roomId).historicalRecordList
                     }))
                 }
             })
@@ -426,7 +456,7 @@ function GroupChart(request) {
      * @param {队伍名称} name
      * @param {队伍颜色} color
      */
-    function changeTeamSetUp(roomId, id, name,color) {
+    function changeTeamSetUp(roomId, id, name, color) {
         connection.ranks = id
         rooms.get(roomId).TeamSetting.ranksColorList.forEach(item => {
             if (item.id === id) {
@@ -468,10 +498,11 @@ function GroupChart(request) {
         // 获取当前记录
         const currentRecord = {
             nickname: nickname,
+            username: connection.username,
             score: score,
             time: time,
-            color:color,
-            ranksName:ranksName
+            color: color,
+            ranksName: ranksName
         }
         // 将当前记录添加到历史记录中
         historicalRecordList.push(currentRecord)
@@ -497,13 +528,15 @@ function GroupChart(request) {
         } else if (data.type === 'setUp') {
             handleTeamSettings(data.roomId, data.TeamSetting)
         } else if (data.type === 'selectTeam') {
-            selectTeam(data.color,data.id, data.roomId)
+            selectTeam(data.color, data.id, data.roomId)
         } else if (data.type === 'addScore') {
             addScore(data.score, data.roomId)
         } else if (data.type === 'theBeginningAndEndOfTheGame') {
             theBeginningAndEndOfTheGame(data.Gtype, data.roomId)
-        } else if(data.type === 'changeTeamSetUp'){
-            changeTeamSetUp(data.roomId,data.id,data.name,data.color)
+        } else if (data.type === 'changeTeamSetUp') {
+            changeTeamSetUp(data.roomId, data.id, data.name, data.color)
+        } else if(data.type === 'modifyNickname'){
+            modifyTheUserSNickname(data.newUsername)
         }
     });
     connection.on("close", function (event) {

@@ -41,7 +41,7 @@ const scoreContent = ref(null);
               placement="top-end"
           >
             <div>
-              <div class="score-body-nickname">{{ item.nickname }}</div>
+              <div class="score-body-nickname">{{ item.username }}</div>
               <span class="score-body-rankName " :style="{backgroundColor:item.color}">{{ item.ranksName }}</span>
               <span class="emoji">👉</span>
               <span class="score-body-score"> +{{ item.score }} </span>
