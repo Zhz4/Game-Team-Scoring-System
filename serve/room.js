@@ -28,6 +28,8 @@ function GroupChart(request) {
         // 设置用户类型，0 为房主
         connection.userType = 0
         rooms.set(roomId, {
+            // 计时时间
+            time:0,
             people: [],
             // 历史记录
             historicalRecordList: [],
@@ -104,6 +106,8 @@ function GroupChart(request) {
         if (!rooms.has(roomId)) {
             rooms.set(roomId, {
                 people: [],
+                // 计时时间
+                time:0,
                 // 历史记录
                 historicalRecordList: [],
                 // 初始默认房间存6人，分三队

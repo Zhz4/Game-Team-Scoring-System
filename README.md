@@ -61,9 +61,8 @@ nodemon ./top.js
 
 ### 项目界面
 #### PC端
-<img src="https://cdn.nlark.com/yuque/0/2023/png/26376404/1686988956580-37445ecc-67d5-4889-bea0-76ceb2392414.png">
-<img src="https://cdn.nlark.com/yuque/0/2023/png/26376404/1686987484511-b4ce3dbe-67c6-4c2d-a277-96b91a9d9076.png?x-oss-process=image%2Fresize%2Cw_825%2Climit_0">
-<img src="https://cdn.nlark.com/yuque/0/2023/png/26376404/1686988010895-6a56e9b1-7f92-44e1-8016-36e7e29988ac.png?x-oss-process=image%2Fresize%2Cw_825%2Climit_0">
+
+![image.png](https://cdn.nlark.com/yuque/0/2023/png/26376404/1689919841513-8e4d4cc3-dd7f-4eea-843d-6368216921d7.png?x-oss-process=image%2Fresize%2Cw_750%2Climit_0)
 
 #### 移动端
 开发中....

@@ -593,7 +593,6 @@ const theBeginningAndEndOfTheGame = (Gtype: number) => {
     });
     return;
   }
-  startGame.value = Gtype;
   // notification(Gtype);
   ws.value?.send(
     JSON.stringify({
