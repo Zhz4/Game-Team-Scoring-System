@@ -18,7 +18,7 @@ jobs:
         run: |
           docker build -t zhza4/game-team-system:latest --build-arg BASE_IMAGE=centos:7 .
 
-      - name: Login to Docker Hub
+      - name: 登录DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub 用户名
@@ -28,7 +28,7 @@ jobs:
         run: |
           docker push zhza4/game-team-system:latest
 
-      - name: 设置 SSH 代理"
+      - name: 设置 SSH 代理
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
