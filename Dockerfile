@@ -19,9 +19,6 @@ RUN npx update-browserslist-db@latest
 # 将整个项目复制到容器中
 COPY . .
 
-# 构建前端项目，传入环境变量
-ARG BACKEND_URL
-ENV VUE_APP_BACKEND_URL=$BACKEND_URL
 RUN npm run build
 
 # 设置运行环境
