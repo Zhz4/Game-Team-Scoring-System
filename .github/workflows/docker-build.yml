@@ -11,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest  # 使用 Ubuntu 作为 Runner，但使用 CentOS Docker 容器进行构建
 
     steps:
-      - name: Checkout code
+      - name: 检出代码
         uses: actions/checkout@v2  # 检出代码
 
-      - name: Build Docker Image
+      - name: 构建Docker镜像
         run: |
           docker build -t zhza4/game-team-system:latest --build-arg BASE_IMAGE=centos:7 .
 
@@ -24,22 +24,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub 用户名
           password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub 密码
 
-      - name: Push Docker Image
+      - name: 推送Docker镜像
         run: |
           docker push zhza4/game-team-system:latest
 
-      - name: Setup SSH Agent
+      - name: 设置 SSH 代理"
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add SSH Host to Known Hosts
+      - name: 将SSH 主机添加到已知主机
         run: |
           ssh-keyscan -H 47.121.188.207 >> ~/.ssh/known_hosts
 
-      - name: Deploy to Server
+      - name: 部署
         run: |
           ssh root@47.121.188.207 "docker pull zhza4/game-team-system:latest && \
           docker stop game-team || true && \
           docker rm game-team || true && \
-          docker run -d -p 8084:80 --name game-team zhza4/game-team-system:latest"
+          docker run -d -p 8084:80 -p 3000:3000 --name game-team zhza4/game-team-system:latest"
