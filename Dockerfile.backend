@@ -2,14 +2,13 @@
 FROM node:16.13.2-alpine
 
 # 设置工作目录
-WORKDIR /app
+WORKDIR /app/serve
 
 # 复制后端项目代码
-COPY serve/package*.json ./
-RUN npm install
+RUN npm install -g nodemon
 
 # 复制后端项目代码
-COPY serve/ .
+COPY serve/ ./serve
 
 # 暴露端口
 EXPOSE 3000

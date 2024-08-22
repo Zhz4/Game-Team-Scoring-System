@@ -27,8 +27,12 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push zhza4/game-team-system:latest
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Deploy to Server
         run: |
           ssh root@47.121.188.207 "docker pull zhza4/game-team-system:latest && docker stop game-team && docker rm game-team && docker run -d -p 8084:80 -e --name game-team zhza4/game-team-system:latest"
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # 你的 SSH 密钥
