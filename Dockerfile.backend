@@ -5,10 +5,13 @@ FROM node:16.13.2-alpine
 WORKDIR /app/serve
 
 # 复制后端项目代码
+COPY serve/ .
+
+# 安装全局依赖
 RUN npm install -g nodemon
 
-# 复制后端项目代码
-COPY serve/ ./serve
+# 安装项目依赖
+RUN npm install
 
 # 暴露端口
 EXPOSE 3000
