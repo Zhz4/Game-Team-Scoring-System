@@ -4,7 +4,13 @@ import router from "./router";
 import store from "./store";
 import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
-import {checkToken, getToken, getUsername, setToken, setUsername} from "@/util/Token";
+import {
+  checkToken,
+  getToken,
+  getUsername,
+  setToken,
+  setUsername,
+} from "@/util/Token";
 // svgIcon的组件
 import svgIcon from "@/components/svgIcon/index.vue";
 import "./assets/icons"; // icon
@@ -16,16 +22,22 @@ let username: string = "";
 // 存储token
 if (!checkToken()) {
   token = new Date().getTime().toString();
-  username = randomUserName("云村村民",5)
-  setToken(token)
-  setUsername(username)
+  username = randomUserName("云村村民", 5);
+  setToken(token);
+  setUsername(username);
 } else {
   username = getUsername()!;
   token = getToken()!;
 }
-const wsUrl = `ws://localhost:3000/groupChart?token=${encodeURIComponent(
-  token
-)}&username=${encodeURIComponent(username)}`;
+const wsUrl =
+  process.env.NODE_ENV === "production"
+    ? `ws://backend:3000/groupChart?token=${encodeURIComponent(
+        token
+      )}&username=${encodeURIComponent(username)}`
+    : `ws://localhost:3000/groupChart?token=${encodeURIComponent(
+        token
+      )}&username=${encodeURIComponent(username)}`;
+
 store.dispatch("connectWebSocket", wsUrl).then(() => {
   createApp(App)
     .use(store)
