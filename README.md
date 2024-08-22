@@ -62,7 +62,7 @@ nodemon ./top.js
 ### 项目界面
 #### PC端
 
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/26376404/1689919841513-8e4d4cc3-dd7f-4eea-843d-6368216921d7.png?x-oss-process=image%2Fresize%2Cw_750%2Climit_0)
+![image.png](./docs/img.png)
 
 #### 移动端
 开发中....
