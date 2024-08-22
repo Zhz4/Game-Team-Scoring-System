@@ -7,6 +7,9 @@ WORKDIR /app
 # 将 package.json 和 package-lock.json 复制到容器中
 COPY package*.json ./
 
+# 使用淘宝镜像以加快依赖安装速度
+RUN npm config set registry https://registry.npmmirror.com
+
 # 安装依赖
 RUN npm install
 
