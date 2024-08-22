@@ -22,6 +22,13 @@ COPY . .
 # 构建前端项目
 RUN npm run build
 
+# Stage 1: 设置运行环境
+FROM centos:7
+
+# 安装 Node.js 和 npm
+RUN curl -sL https://rpm.nodesource.com/setup_16.x | bash - && \
+    yum install -y nodejs
+
 # 安装 `supervisord`
 RUN apk add --no-cache supervisor
 
