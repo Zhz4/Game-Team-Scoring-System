@@ -33,6 +33,10 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Add SSH Host to Known Hosts
+        run: |
+          ssh-keyscan -H 47.121.188.207 >> ~/.ssh/known_hosts
+
       - name: Deploy to Server
         run: |
           ssh root@47.121.188.207 "docker pull zhza4/game-team-system:latest && docker stop game-team && docker rm game-team && docker run -d -p 8084:80 -e --name game-team zhza4/game-team-system:latest"
