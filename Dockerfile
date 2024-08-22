@@ -19,15 +19,30 @@ RUN npx update-browserslist-db@latest
 # 将整个项目复制到容器中
 COPY . .
 
+# 构建前端项目
 RUN npm run build
 
 # 设置运行环境
 FROM nginx:stable-alpine AS runtime-stage
 
+# 安装 Supervisor
+RUN apk add --no-cache supervisor
+
 # 复制前端构建的文件到 Nginx 的默认静态资源路径
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+# 复制后端项目
+COPY --from=build-stage /app/serve /app/serve
 
-# 启动 Nginx
-CMD ["sh", "-c", "nginx -g 'daemon off;'"]
+# 复制 Supervisor 配置文件
+COPY supervisord.conf /etc/supervisord.conf
+
+# 设置工作目录为后端项目目录
+WORKDIR /app/serve
+
+# 暴露端口
+EXPOSE 80
+EXPOSE 3000
+
+# 启动 Supervisor
+CMD ["supervisord", "-c", "/etc/supervisord.conf"]
