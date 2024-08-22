@@ -35,11 +35,11 @@ jobs:
 
       - name: 将SSH 主机添加到已知主机
         run: |
-          ssh-keyscan -H 47.121.188.207 >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.IP_HOST}} >> ~/.ssh/known_hosts
 
       - name: 部署
         run: |
-          ssh root@47.121.188.207 "docker pull zhza4/game-team-system:latest && \
+          ssh root@${{ secrets.IP_HOST}} "docker pull zhza4/game-team-system:latest && \
           docker stop game-team || true && \
           docker rm game-team || true && \
           docker run -d -p 8084:80 -p 3000:3000 --name game-team zhza4/game-team-system:latest"
