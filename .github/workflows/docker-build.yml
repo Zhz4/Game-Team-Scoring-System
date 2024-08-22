@@ -27,6 +27,15 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push zhza4/game-team-system:latest
+
+      - name: Setup SSH
+        run: |
+          eval "$(ssh-agent -s)"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H 47.121.188.207 >> ~/.ssh/known_hosts
+
       - name: Deploy to Server
         run: |
           ssh user@47.121.188.207 "docker pull zhza4/game-team-system:latest && docker stop game-team && docker rm game-team && docker run -d -p 8084:80 -e --name game-team zhza4/game-team-system:latest"
