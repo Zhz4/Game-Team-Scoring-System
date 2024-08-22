@@ -2,14 +2,14 @@ import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: "/",
-    name: "home",
-    component:  ()=>import("../views/home/index.vue"),
-  },
+  // {
+  //   path: "/",
+  //   name: "home",
+  //   component:  ()=>import("../views/home/index.vue"),
+  // },
   {
     // 加入房间以及创建房间
-    path: "/JoinRoom",
+    path: "/",
     name: "JoinRoom",
     component:  ()=> import("../views/JoinRoom/index.vue"),
   },
