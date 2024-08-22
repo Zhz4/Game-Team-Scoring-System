@@ -13,6 +13,9 @@ RUN npm config set registry https://registry.npmmirror.com
 # 安装依赖
 RUN npm install
 
+# 更新 browserslist 数据库
+RUN npx update-browserslist-db@latest
+
 # 将整个项目复制到容器中
 COPY . .
 
