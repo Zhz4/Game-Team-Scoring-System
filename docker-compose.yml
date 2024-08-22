@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VUE_APP_BACKEND_URL: "ws://backend:3000"  # 后端 WebSocket 地址
     ports:
       - "80:80"  # 将主机的80端口映射到容器的80端口
     depends_on:

@@ -29,14 +29,12 @@ if (!checkToken()) {
   username = getUsername()!;
   token = getToken()!;
 }
-const wsUrl =
-  process.env.NODE_ENV === "production"
-    ? `ws://backend:3000/groupChart?token=${encodeURIComponent(
-        token
-      )}&username=${encodeURIComponent(username)}`
-    : `ws://localhost:3000/groupChart?token=${encodeURIComponent(
-        token
-      )}&username=${encodeURIComponent(username)}`;
+// const wsUrl = `${process.env.BACKEND_URL}/groupChart?token=${encodeURIComponent(token)}&username=${encodeURIComponent(username)}`;
+const wsUrl = `${
+  process.env.VUE_APP_BACKEND_URL
+}/groupChart?token=${encodeURIComponent(token)}&username=${encodeURIComponent(
+  username
+)}`;
 
 store.dispatch("connectWebSocket", wsUrl).then(() => {
   createApp(App)
