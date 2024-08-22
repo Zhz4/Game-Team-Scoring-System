@@ -19,7 +19,9 @@ RUN npx update-browserslist-db@latest
 # 将整个项目复制到容器中
 COPY . .
 
-# 构建前端项目
+# 构建前端项目，传入环境变量
+ARG BACKEND_URL
+ENV VUE_APP_BACKEND_URL=$BACKEND_URL
 RUN npm run build
 
 # 设置运行环境
@@ -30,9 +32,6 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 
 # 复制后端项目
 COPY --from=build-stage /app/serve /app/serve
-
-# 设置环境变量
-ENV VUE_APP_BACKEND_URL=ws://backend:3000
 
 # 安装 Node.js 和 nodemon 用于后端项目
 RUN apk add --no-cache nodejs npm && \
