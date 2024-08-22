@@ -38,9 +38,9 @@ RUN apk add --no-cache nodejs npm && \
 # 设置工作目录为后端项目目录
 WORKDIR /app/serve
 
-# 启动 Nginx 和后端项目
-CMD ["sh", "-c", "nginx && nodemon index.js"]
-
 # 暴露端口
 EXPOSE 80
 EXPOSE 3000
+
+# 启动 Nginx 和后端项目
+CMD ["sh", "-c", "nginx -g 'daemon off;' & nodemon index.js"]
