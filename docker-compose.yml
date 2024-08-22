@@ -13,13 +13,11 @@ services:
       - app-network
 
   backend:
-    image: node:16.13.2-alpine
-    working_dir: /app/serve
-    volumes:
-      - ./serve:/app/serve  # 挂载后端项目文件夹，便于开发时同步
-    command: nodemon ./index.js  # 启动后端服务
+    build:
+      context: .
+      dockerfile: Dockerfile.backend  # 创建单独的 Dockerfile 仅用于后端
     ports:
-      - "3000:3000"  # 将主机的3000端口映射到容器的3000端口
+      - "3000:3000"
     networks:
       - app-network
 

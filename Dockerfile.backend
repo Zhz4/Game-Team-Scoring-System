@@ -1,0 +1,18 @@
+# 使用 Node.js 作为基础镜像
+FROM node:16.13.2-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 复制后端项目代码
+COPY serve/package*.json ./
+RUN npm install
+
+# 复制后端项目代码
+COPY serve/ .
+
+# 暴露端口
+EXPOSE 3000
+
+# 启动后端项目
+CMD ["nodemon", "index.js"]
