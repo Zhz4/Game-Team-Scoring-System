@@ -25,6 +25,9 @@ RUN npm run build
 # 设置运行环境
 FROM nginx:stable-alpine AS runtime-stage
 
+# 安装 Node.js 和 npm
+RUN apk add --no-cache nodejs npm
+
 # 安装 Supervisor
 RUN apk add --no-cache supervisor
 
