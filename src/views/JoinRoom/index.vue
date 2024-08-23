@@ -19,7 +19,7 @@
                 <div></div>
               </div>
             </div>
-            <button @click="join">Join</button>
+            <button @click="join">加入</button>
           </div>
         </div>
       </div>
