@@ -11,9 +11,7 @@ COPY package*.json ./
 RUN npm config set registry https://registry.npmmirror.com
 
 # 安装依赖
-RUN npm install && npm install -g nodemon
-
-RUN npm install -g pm2
+RUN npm install
 
 # 更新 browserslist 数据库
 RUN npx update-browserslist-db@latest
@@ -36,11 +34,18 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # 复制后端项目
 COPY --from=build-stage /app/serve /app/serve
 
-# 复制 Supervisor 配置文件
-COPY supervisord.conf /etc/supervisord.conf
-
 # 设置工作目录为后端项目目录
 WORKDIR /app/serve
+
+COPY package*.json ./
+
+# 使用淘宝镜像以加快依赖安装速度
+RUN npm config set registry https://registry.npmmirror.com
+
+RUN npm install && npm install -g pm2
+
+# 复制 Supervisor 配置文件
+COPY supervisord.conf /etc/supervisord.conf
 
 # 暴露端口
 EXPOSE 80

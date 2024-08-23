@@ -1,6 +1,6 @@
 const {
     server
-} = require('./WebSocketServer')
+} = require('./webSocketServer')
 
 // 启动 HTTP 服务器
 server.listen(3000, () => {
