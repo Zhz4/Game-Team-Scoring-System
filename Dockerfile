@@ -23,7 +23,7 @@ COPY --from=build-stage /app/serve /app/serve
 COPY --from=build-stage /app/package*.json ./
 
 # 安装后端依赖和 pm2
-RUN npm config set registry https://registry.npmmirror.com && npm install && npm install -g pm2
+RUN npm config set registry https://registry.npmmirror.com && npm install
 
 # 使用 Nginx 作为基础镜像来托管前端文件
 FROM nginx:stable-alpine AS runtime-stage
@@ -36,6 +36,9 @@ COPY --from=backend-stage /app/serve /app/serve
 
 # 安装 Supervisor
 RUN apk add --no-cache supervisor
+
+# 安装 pm2
+RUN --from=backend-stage npm install -g pm2
 
 # 复制 Supervisor 配置文件
 COPY supervisord.conf /etc/supervisord.conf
