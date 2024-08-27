@@ -38,7 +38,7 @@ COPY --from=backend-stage /app/serve /app/serve
 RUN apk add --no-cache supervisor
 
 # 安装 pm2
-RUN --from=backend-stage npm install -g pm2
+RUN npm install -g pm2
 
 # 复制 Supervisor 配置文件
 COPY supervisord.conf /etc/supervisord.conf
