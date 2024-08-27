@@ -1,38 +1,48 @@
-# 使用 Node.js 16.13.2 作为基础镜像构建前端项目
+# 使用 Node.js 16.13.2 作为基础镜像
 FROM node:16.13.2-alpine AS build-stage
 
 # 设置工作目录
 WORKDIR /app
 
-# 复制并安装前端依赖
+# 将 package.json 和 package-lock.json 复制到容器中
 COPY package*.json ./
-RUN npm config set registry https://registry.npmmirror.com && npm install
+
+# 使用淘宝镜像以加快依赖安装速度
+RUN npm config set registry https://registry.npmmirror.com
+
+# 安装依赖
+RUN npm install
+
+# 将整个项目复制到容器中
+COPY . .
 
 # 构建前端项目
-COPY . .
 RUN npm run build
 
-# 使用 Node.js 16.13.2 作为基础镜像运行后端服务
-FROM node:16.13.2-alpine AS backend-stage
-
-# 设置工作目录
-WORKDIR /app/serve
-
-# 复制后端项目文件及依赖文件
-COPY ./package*.json ./
-RUN npm config set registry https://registry.npmmirror.com && npm install && npm install -g pm2
-
-# 复制后端服务到容器中
-COPY ./serve ./
-
-# 使用 Nginx 作为基础镜像来托管前端文件
+# 设置运行环境
 FROM nginx:stable-alpine AS runtime-stage
+
+# 安装 Node.js 和 npm
+RUN apk add --no-cache nodejs npm
+
+# 安装 Supervisor
+RUN apk add --no-cache supervisor
 
 # 复制前端构建的文件到 Nginx 的默认静态资源路径
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# 安装 Supervisor
-RUN apk add --no-cache supervisor
+# 复制后端项目
+COPY --from=build-stage /app/serve /app/serve
+
+# 设置工作目录为后端项目目录
+WORKDIR /app/serve
+
+COPY package*.json ./
+
+# 使用淘宝镜像以加快依赖安装速度
+RUN npm config set registry https://registry.npmmirror.com
+
+RUN npm install && npm install -g pm2
 
 # 复制 Supervisor 配置文件
 COPY supervisord.conf /etc/supervisord.conf
