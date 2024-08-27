@@ -34,6 +34,9 @@ COPY --from=build-stage /app/dist /usr/share/nginx/html
 # 复制后端服务到容器中
 COPY --from=backend-stage /app/serve /app/serve
 
+# 安装 Supervisor
+RUN apk add --no-cache supervisor
+
 # 复制 Supervisor 配置文件
 COPY supervisord.conf /etc/supervisord.conf
 
